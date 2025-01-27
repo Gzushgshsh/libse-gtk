@@ -48,6 +48,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="GdkSharp" />
+		<PackageReference Include="CairoSharp" />
+		<PackageReference Include="PangoSharp" />
 		<PackageReference Include="Microsoft.Win32.Registry" />
 		<PackageReference Include="System.Drawing.Common" />
 		<PackageReference Include="System.Net.Http" />
