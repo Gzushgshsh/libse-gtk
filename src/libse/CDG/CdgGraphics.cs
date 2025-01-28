@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
+using Color = System.Drawing.Color;
+using Gdk;
 using System.Runtime.InteropServices;
+using Lucas.SubtitleEdit.GtkExpansions.PixbufExtensions;
 
 namespace Nikse.SubtitleEdit.Core.CDG
 {
@@ -47,7 +48,7 @@ namespace Nikse.SubtitleEdit.Core.CDG
             _startPosition = 0;
         }
 
-        public Bitmap ToBitmap(int packetNumber) // long timeInMilliseconds)
+        public Pixbuf ToBitmap(int packetNumber) // long timeInMilliseconds)
         {
             //duration of one packet is 1/300 seconds (1000/300ms) (4 packets per sector, 75 sectors per second)
             //p=t*3/10  t=p*10/3 t=milliseconds, p=packets
@@ -80,19 +81,19 @@ namespace Nikse.SubtitleEdit.Core.CDG
             }
 
             var graphicData = GetGraphicData();
-            var image = new Bitmap(FullWidth, FullHeight, PixelFormat.Format32bppArgb);
-            var bitmapData = image.LockBits(new Rectangle(0, 0, FullWidth, FullHeight), ImageLockMode.WriteOnly, image.PixelFormat);
+            var image = new Pixbuf(Colorspace.Rgb, true, 8, FullWidth, FullHeight);
+            // var bitmapData = image.LockBits(new Rectangle(0, 0, FullWidth, FullHeight), ImageLockMode.WriteOnly, image.PixelFormat);
             var offset = 0;
             foreach (var colorValue in graphicData)
             {
                 var color = BitConverter.GetBytes(colorValue);
                 foreach (var bytes in color)
                 {
-                    Marshal.WriteByte(bitmapData.Scan0, offset, bytes);
+                    Marshal.WriteByte(image.Pixels, offset, bytes);
                     offset++;
                 }
             }
-            image.UnlockBits(bitmapData);
+            // image.UnlockBits(bitmapData);
             image.MakeTransparent(image.GetPixel(1, 1));
             return image;
         }

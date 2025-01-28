@@ -1,8 +1,8 @@
-﻿//Downloaded from Visual C# Kicks - http://www.vcskicks.com/
+﻿//Downloaded from Visual C# Kicks - http://www.vcskicks.com/ and adapted for Gdk
 
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
+using Color = System.Drawing.Color;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.Common
 {
@@ -32,32 +32,31 @@ namespace Nikse.SubtitleEdit.Core.Common
         public int Width { get; set; }
         public int Height { get; set; }
 
-        private readonly Bitmap _workingBitmap;
+        private readonly Pixbuf _workingBitmap;
         private int _width;
-        private BitmapData _bitmapData;
         private byte* _pBase = null;
 
-        public FastBitmap(Bitmap inputBitmap)
+        public FastBitmap(Pixbuf inputBitmap)
         {
             _workingBitmap = inputBitmap;
 
             Width = inputBitmap.Width;
             Height = inputBitmap.Height;
+
+            RestartPosition();
         }
 
-        public void LockImage()
+        /// <summary>
+        /// Reset position to the first pixel
+        /// </summary>
+        public void RestartPosition()
         {
-            var bounds = new Rectangle(Point.Empty, _workingBitmap.Size);
-
-            _width = bounds.Width * sizeof(PixelData);
-            if (_width % 4 != 0)
-            {
-                _width = 4 * (_width / 4 + 1);
-            }
-
-            //Lock Image
-            _bitmapData = _workingBitmap.LockBits(bounds, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-            _pBase = (Byte*)_bitmapData.Scan0.ToPointer();
+            _width = _workingBitmap.Width * sizeof(PixelData);
+            // if (_width % 4 != 0) // Need this?
+            // {
+            //     _width = 4 * (_width / 4 + 1);
+            // }
+            _pBase = (Byte*)_workingBitmap.Pixels.ToPointer();
         }
 
         private PixelData* _pixelData = null;
@@ -102,16 +101,9 @@ namespace Nikse.SubtitleEdit.Core.Common
             }
         }
 
-        public Bitmap GetBitmap()
+        public Pixbuf GetBitmap()
         {
             return _workingBitmap;
-        }
-
-        public void UnlockImage()
-        {
-            _workingBitmap.UnlockBits(_bitmapData);
-            _bitmapData = null;
-            _pBase = null;
         }
     }
 }

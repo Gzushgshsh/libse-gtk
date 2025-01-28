@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
 
 namespace Nikse.SubtitleEdit.Core.Common.TextEffect
 {

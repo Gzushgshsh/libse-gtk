@@ -20,7 +20,9 @@
 using Nikse.SubtitleEdit.Core.Common;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
+using ContentAlignment = System.Drawing.ContentAlignment;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.BluRaySup
 {
@@ -368,7 +370,7 @@ namespace Nikse.SubtitleEdit.Core.BluRaySup
         /// <param name="alignment">Alignment of image</param>
         /// <param name="overridePosition">Position that overrides alignment</param>
         /// <returns>Byte buffer containing the binary stream representation of one caption</returns>
-        public static byte[] CreateSupFrame(BluRaySupPicture pic, Bitmap bmp, double fps, int bottomMargin, int leftOrRightMargin, ContentAlignment alignment, Point? overridePosition = null)
+        public static byte[] CreateSupFrame(BluRaySupPicture pic, Pixbuf bmp, double fps, int bottomMargin, int leftOrRightMargin, ContentAlignment alignment, Point? overridePosition = null)
         {
             var bm = new NikseBitmap(bmp);
             bm.SetTransparentTo(Color.FromArgb(0, 0, 0, 0));

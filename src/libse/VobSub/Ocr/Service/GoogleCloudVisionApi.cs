@@ -2,7 +2,7 @@
 using Nikse.SubtitleEdit.Core.Http;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Gdk;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -163,18 +163,13 @@ namespace Nikse.SubtitleEdit.Core.VobSub.Ocr.Service
             return "https://cloud.google.com/vision/docs/ocr";
         }
 
-        public List<string> PerformOcr(string language, List<Bitmap> images)
+        public List<string> PerformOcr(string language, List<Pixbuf> images)
         {
             var requestBody = new RequestBody();
 
             foreach (var image in images)
             {
-                string imageBase64;
-                using (var memoryStream = new MemoryStream())
-                {
-                    image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                    imageBase64 = Convert.ToBase64String(memoryStream.ToArray());
-                }
+                string imageBase64 = Convert.ToBase64String(image.SaveToBuffer("png"));
 
                 var request = new RequestBody.Request(imageBase64, language);
                 requestBody.requests.Add(request);

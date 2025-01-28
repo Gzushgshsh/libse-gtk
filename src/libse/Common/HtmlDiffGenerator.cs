@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
+using ColorTranslator = System.Drawing.ColorTranslator;
 using System.IO;
 using System.Text;
 

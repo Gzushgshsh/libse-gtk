@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
+using Color = System.Drawing.Color;
+using Gdk;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Nikse.SubtitleEdit.Core.Common
 {
@@ -47,7 +46,7 @@ namespace Nikse.SubtitleEdit.Core.Common
             _bitmapData = bitmapData;
         }
 
-        public NikseBitmap(Bitmap inputBitmap)
+        public NikseBitmap(Pixbuf inputBitmap)
         {
             if (inputBitmap == null)
             {
@@ -57,21 +56,23 @@ namespace Nikse.SubtitleEdit.Core.Common
             Width = inputBitmap.Width;
             Height = inputBitmap.Height;
             bool createdNewBitmap = false;
-            if (inputBitmap.PixelFormat != PixelFormat.Format32bppArgb)
+            if (inputBitmap.NChannels != 4 || inputBitmap.BitsPerSample != 8)
             {
-                var newBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height, PixelFormat.Format32bppArgb);
-                using (var gr = Graphics.FromImage(newBitmap))
-                {
-                    gr.DrawImage(inputBitmap, 0, 0);
-                }
-                inputBitmap = newBitmap;
+                Pixbuf pixbufNew = new Pixbuf(Colorspace.Rgb, true, 8, Width, Height);
+                inputBitmap.CopyArea(0, 0, Width, Height, pixbufNew, 0, 0);
+                inputBitmap = pixbufNew;
                 createdNewBitmap = true;
             }
 
-            var bitmapData = inputBitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            _bitmapData = new byte[bitmapData.Stride * Height];
-            Marshal.Copy(bitmapData.Scan0, _bitmapData, 0, _bitmapData.Length);
-            inputBitmap.UnlockBits(bitmapData);
+            _bitmapData = inputBitmap.PixelBytes.Data;
+            // Convert RGBA to BGRA
+            for (int i = 0; i < _bitmapData.Length; i += 4 )
+            {
+                byte red = _bitmapData[i];
+                byte blue = _bitmapData[i + 2];
+                _bitmapData[i + 2] = red;
+                _bitmapData[i] = blue;
+            }
             if (createdNewBitmap)
             {
                 inputBitmap.Dispose();
@@ -1045,14 +1046,21 @@ namespace Nikse.SubtitleEdit.Core.Common
             _bitmapData[_pixelAddress + 3] = color.A;
         }
 
-        public Bitmap GetBitmap()
+        public Pixbuf GetBitmap()
         {
-            var bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
-            var bitmapData = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-            var destination = bitmapData.Scan0;
-            Marshal.Copy(_bitmapData, 0, destination, _bitmapData.Length);
-            bitmap.UnlockBits(bitmapData);
-            return bitmap;
+            // Get a copy of data
+            byte[] data = _bitmapData;
+
+            // Convert BGRA to RGBA
+            for (int i = 0; i < data.Length; i += 4 )
+            {
+                byte blue = _bitmapData[i];
+                byte red = _bitmapData[i + 2];
+                _bitmapData[i + 2] = blue;
+                _bitmapData[i] = red;
+            }
+
+            return new Pixbuf(data);
         }
 
         private static int FindBestMatch(Color color, List<Color> palette, out int maxDiff)
@@ -1081,68 +1089,69 @@ namespace Nikse.SubtitleEdit.Core.Common
             return smallestDiffIndex;
         }
 
-        public Bitmap ConvertTo8BitsPerPixel()
-        {
-            var newBitmap = new Bitmap(Width, Height, PixelFormat.Format8bppIndexed);
-            var palette = new List<Color> { Color.Transparent };
-            var bPalette = newBitmap.Palette;
-            var entries = bPalette.Entries;
-            for (int i = 0; i < newBitmap.Palette.Entries.Length; i++)
-            {
-                entries[i] = Color.Transparent;
-            }
+        // TODO: Redo this later ( -_-)
+        // public PixbufConvertTo8BitsPerPixel()
+        // {
+        //     var newBitmap = new Pixbuf(Colorspace.Rgb, true, 8, Width, Height, PixelFormat.Format8bppIndexed);
+        //     var palette = new List<Color> { Color.Transparent };
+        //     var bPalette = newBitmap.Palette;
+        //     var entries = bPalette.Entries;
+        //     for (int i = 0; i < newBitmap.Palette.Entries.Length; i++)
+        //     {
+        //         entries[i] = Color.Transparent;
+        //     }
 
-            var data = newBitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
-            var bytes = new byte[data.Height * data.Stride];
-            Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
+        //     var data = newBitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+        //     var bytes = new byte[data.Height * data.Stride];
+        //     Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
 
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    var c = GetPixel(x, y);
-                    if (c.A < 5)
-                    {
-                        bytes[y * data.Stride + x] = 0;
-                    }
-                    else
-                    {
-                        int index = FindBestMatch(c, palette, out var maxDiff);
+        //     for (int y = 0; y < Height; y++)
+        //     {
+        //         for (int x = 0; x < Width; x++)
+        //         {
+        //             var c = GetPixel(x, y);
+        //             if (c.A < 5)
+        //             {
+        //                 bytes[y * data.Stride + x] = 0;
+        //             }
+        //             else
+        //             {
+        //                 int index = FindBestMatch(c, palette, out var maxDiff);
 
-                        if (index == -1 && palette.Count < 255)
-                        {
-                            index = palette.Count;
-                            entries[index] = c;
-                            palette.Add(c);
-                            bytes[y * data.Stride + x] = (byte)index;
-                        }
-                        else if (palette.Count < 200 && maxDiff > 5)
-                        {
-                            index = palette.Count;
-                            entries[index] = c;
-                            palette.Add(c);
-                            bytes[y * data.Stride + x] = (byte)index;
-                        }
-                        else if (palette.Count < 255 && maxDiff > 15)
-                        {
-                            index = palette.Count;
-                            entries[index] = c;
-                            palette.Add(c);
-                            bytes[y * data.Stride + x] = (byte)index;
-                        }
-                        else if (index >= 0)
-                        {
-                            bytes[y * data.Stride + x] = (byte)index;
-                        }
-                    }
-                }
-            }
+        //                 if (index == -1 && palette.Count < 255)
+        //                 {
+        //                     index = palette.Count;
+        //                     entries[index] = c;
+        //                     palette.Add(c);
+        //                     bytes[y * data.Stride + x] = (byte)index;
+        //                 }
+        //                 else if (palette.Count < 200 && maxDiff > 5)
+        //                 {
+        //                     index = palette.Count;
+        //                     entries[index] = c;
+        //                     palette.Add(c);
+        //                     bytes[y * data.Stride + x] = (byte)index;
+        //                 }
+        //                 else if (palette.Count < 255 && maxDiff > 15)
+        //                 {
+        //                     index = palette.Count;
+        //                     entries[index] = c;
+        //                     palette.Add(c);
+        //                     bytes[y * data.Stride + x] = (byte)index;
+        //                 }
+        //                 else if (index >= 0)
+        //                 {
+        //                     bytes[y * data.Stride + x] = (byte)index;
+        //                 }
+        //             }
+        //         }
+        //     }
 
-            Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
-            newBitmap.UnlockBits(data);
-            newBitmap.Palette = bPalette;
-            return newBitmap;
-        }
+        //     Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
+        //     newBitmap.UnlockBits(data);
+        //     newBitmap.Palette = bPalette;
+        //     return newBitmap;
+        // }
 
         public NikseBitmap CopyRectangle(Rectangle section)
         {

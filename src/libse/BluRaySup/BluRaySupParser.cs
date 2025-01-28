@@ -22,8 +22,8 @@ using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
 using Nikse.SubtitleEdit.Core.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
+using Color = System.Drawing.Color;
+using Gdk;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -121,11 +121,11 @@ namespace Nikse.SubtitleEdit.Core.BluRaySup
             /// Decode caption from the input stream
             /// </summary>
             /// <returns>bitmap of the decoded caption</returns>
-            public static Bitmap DecodeImage(PcsObject pcs, IList<OdsData> data, List<PaletteInfo> palettes)
+            public static Pixbuf DecodeImage(PcsObject pcs, IList<OdsData> data, List<PaletteInfo> palettes)
             {
                 if (pcs == null || data == null || data.Count == 0)
                 {
-                    return new Bitmap(1, 1);
+                    return new Pixbuf(Colorspace.Rgb, true, 8, 1, 1);
                 }
 
                 int w = data[0].Size.Width;
@@ -133,11 +133,11 @@ namespace Nikse.SubtitleEdit.Core.BluRaySup
 
                 if (w <= 0 || h <= 0 || data[0].Fragment.ImageBuffer.Length == 0)
                 {
-                    return new Bitmap(1, 1);
+                    return new Pixbuf(Colorspace.Rgb, true, 8, 1, 1);
                 }
 
-                var bm = new FastBitmap(new Bitmap(w, h));
-                bm.LockImage();
+                var bm = new FastBitmap(new Pixbuf(Colorspace.Rgb, true, 8, w, h));
+                // bm.LockImage();
                 var pal = DecodePalette(palettes);
 
                 int ofs = 0;
@@ -232,7 +232,7 @@ namespace Nikse.SubtitleEdit.Core.BluRaySup
                     }
                 } while (index < buf.Length);
 
-                bm.UnlockImage();
+                // ebm.UnlockImage();
                 return bm.GetBitmap();
             }
 
@@ -280,14 +280,14 @@ namespace Nikse.SubtitleEdit.Core.BluRaySup
             /// </summary>
             public bool IsForced => PcsObjects.Any(obj => obj.IsForced);
 
-            public Bitmap GetBitmap()
+            public Pixbuf GetBitmap()
             {
                 if (PcsObjects.Count == 1)
                 {
                     return SupDecoder.DecodeImage(PcsObjects[0], BitmapObjects[0], PaletteInfos);
                 }
 
-                var r = Rectangle.Empty;
+                var r = Rectangle.Zero;
                 for (int ioIndex = 0; ioIndex < PcsObjects.Count; ioIndex++)
                 {
                     if (ioIndex < BitmapObjects.Count)
@@ -297,16 +297,15 @@ namespace Nikse.SubtitleEdit.Core.BluRaySup
                     }
                 }
 
-                var mergedBmp = new Bitmap(r.Width, r.Height, PixelFormat.Format32bppArgb);
+                var mergedBmp = new Pixbuf(Colorspace.Rgb, true, 8, r.Width, r.Height);
                 for (var ioIndex = 0; ioIndex < PcsObjects.Count; ioIndex++)
                 {
                     if (ioIndex < BitmapObjects.Count)
                     {
                         var offset = PcsObjects[ioIndex].Origin - new Size(r.Location);
-                        using (var singleBmp = SupDecoder.DecodeImage(PcsObjects[ioIndex], BitmapObjects[ioIndex], PaletteInfos))
-                        using (var gSideBySide = Graphics.FromImage(mergedBmp))
+                        using (Pixbuf singleBmp = SupDecoder.DecodeImage(PcsObjects[ioIndex], BitmapObjects[ioIndex], PaletteInfos))
                         {
-                            gSideBySide.DrawImage(singleBmp, offset.X, offset.Y);
+                            singleBmp.CopyArea(0, 0, mergedBmp.Width, mergedBmp.Height, mergedBmp, offset.X, offset.Y);
                         }
                     }
                 }
@@ -760,7 +759,7 @@ namespace Nikse.SubtitleEdit.Core.BluRaySup
                             if (latestPcs != null)
                             {
 #if DEBUG
-                                log.AppendLine($"0x15 - Bitmap data - ODS offset={position} size={segment.Size}");
+                                log.AppendLine($"0x15 - Pixbufdata - ODS offset={position} size={segment.Size}");
 #endif
                                 var ods = ParseOds(buffer, segment, forceFirstOds);
 #if DEBUG

@@ -1,7 +1,8 @@
 ﻿using System;
 using Nikse.SubtitleEdit.Core.Common;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
 {
@@ -23,7 +24,7 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
         public int NumberOfCodes { get; set; }
 
         public List<string> FirstDataTypes = new List<string>();
-        public Bitmap Image { get; set; }
+        public Pixbuf Image { get; set; }
         private FastBitmap _fastImage;
 
         public static int PixelDecoding2Bit => 0x10;
@@ -62,7 +63,7 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
 
                 if (length + index + 7 > buffer.Length) // check if buffer is large enough
                 {
-                    Image = new Bitmap(1, 1);
+                    Image = new Pixbuf(Colorspace.Rgb, true, 8, 1, 1);
                     return;
                 }
 
@@ -87,9 +88,9 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
                     y = 500;
                 }
 
-                Image = new Bitmap(Math.Max(1, width), y + 1);
+                Image = new Pixbuf(Colorspace.Rgb, true, 8, Math.Max(1, width), y + 1);
                 _fastImage = new FastBitmap(Image);
-                _fastImage.LockImage();
+                // _fastImage.LockImage();
 
                 x = 0;
                 y = 0;
@@ -116,11 +117,11 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
                 {
                     index = ProcessDataType(buffer, index, cds, ref dataType, start, twoToFourBitColorLookup, fourToEightBitColorLookup, twoToEightBitColorLookup, ref x, ref y, length, ref pixelCode, ref runLength);
                 }
-                _fastImage.UnlockImage();
+                // _fastImage.UnlockImage();
             }
             else if (ObjectCodingMethod == 1)
             {
-                Image = new Bitmap(1, 1);
+                Image = new Pixbuf(Colorspace.Rgb, true, 8, 1, 1);
                 NumberOfCodes = buffer[index + 3];
             }
         }

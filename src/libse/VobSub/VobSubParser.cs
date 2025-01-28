@@ -1,7 +1,7 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
 using System.IO;
 
 namespace Nikse.SubtitleEdit.Core.VobSub

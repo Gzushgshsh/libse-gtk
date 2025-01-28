@@ -1,6 +1,6 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Interfaces;
-using System.Drawing;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
 {
@@ -35,7 +35,7 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
         /// Gets full image if 'ActiveImageIndex' not set, otherwise only gets image by index
         /// </summary>
         /// <returns></returns>
-        public Bitmap GetBitmap()
+        public Pixbuf GetBitmap()
         {
             if (_bdSup != null)
             {
@@ -44,7 +44,7 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
 
             if (ActiveImageIndex.HasValue && ActiveImageIndex >= 0 && ActiveImageIndex < Pes.ObjectDataList.Count)
             {
-                return (Bitmap)Pes.GetImage(Pes.ObjectDataList[ActiveImageIndex.Value]).Clone();
+                return (Pixbuf)Pes.GetImage(Pes.ObjectDataList[ActiveImageIndex.Value]).Clone();
             }
 
             return Pes.GetImageFull();

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Drawing;
+using Color = System.Drawing.Color;
 
 namespace Nikse.SubtitleEdit.Core.Common
 {

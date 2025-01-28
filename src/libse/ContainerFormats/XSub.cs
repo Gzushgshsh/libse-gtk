@@ -1,7 +1,9 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
+using Gdk;
+using Cairo;
 
 namespace Nikse.SubtitleEdit.Core.ContainerFormats
 {
@@ -97,21 +99,25 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats
             return (buf[nibbleOffset >> 1] >> ((1 - (nibbleOffset & 1)) << 2)) & 0xf;
         }
 
-        public Bitmap GetImage(Color background, Color pattern, Color emphasis1, Color emphasis2)
+        public Pixbuf GetImage(Color background, Color pattern, Color emphasis1, Color emphasis2)
         {
             var fourColors = new List<Color> { background, pattern, emphasis1, emphasis2 };
-            var bmp = new Bitmap(Width, Height);
+            var bmp = new Pixbuf(Colorspace.Rgb, true, 8, Width, Height);
             if (fourColors[0] != Color.Transparent)
             {
-                using (var gr = Graphics.FromImage(bmp))
+                using (Surface surface = CairoHelper.SurfaceCreateFromPixbuf(bmp, 1, null))
+                using (Context context = new Context(surface))
                 {
-                    gr.FillRectangle(new SolidBrush(fourColors[0]), new Rectangle(0, 0, bmp.Width, bmp.Height));
+                    Color c = fourColors[0];
+                    context.SetSourceRGBA(c.R / byte.MaxValue, c.B / byte.MaxValue, c.B / byte.MaxValue, c.A / byte.MaxValue);
+                    context.Rectangle(new Cairo.Rectangle(0, 0, bmp.Width, bmp.Height));
+                    context.Fill();
                 }
             }
             var fastBmp = new FastBitmap(bmp);
-            fastBmp.LockImage();
+            // fastBmp.LockImage();
             GenerateBitmap(fastBmp, _rleBuffer, fourColors);
-            fastBmp.UnlockImage();
+            // fastBmp.UnlockImage();
             return bmp;
         }
 
@@ -120,7 +126,7 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats
             return Color.FromArgb(_colorBuffer[start], _colorBuffer[start + 1], _colorBuffer[start + 2]);
         }
 
-        public Bitmap GetImage()
+        public Pixbuf GetImage()
         {
             return GetImage(Color.Transparent, GetColor(3), GetColor(6), GetColor(9));
         }

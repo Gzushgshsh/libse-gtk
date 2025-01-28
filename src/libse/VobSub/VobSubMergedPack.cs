@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
+using Gdk;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Interfaces;
 
@@ -26,7 +27,7 @@ namespace Nikse.SubtitleEdit.Core.VobSub
 
         public bool IsForced => SubPicture.Forced;
 
-        public Bitmap GetBitmap()
+        public Pixbuf GetBitmap()
         {
             return SubPicture.GetBitmap(Palette, Color.Transparent, Color.Black, Color.White, Color.Black, false, true);
         }

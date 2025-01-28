@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Drawing;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.VobSub.Ocr.Service
 {
@@ -43,7 +43,7 @@ namespace Nikse.SubtitleEdit.Core.VobSub.Ocr.Service
             return string.Empty;
         }
 
-        public List<string> PerformOcr(string language, List<Bitmap> images)
+        public List<string> PerformOcr(string language, List<Pixbuf> images)
         {
             return _ocrStrategy.PerformOcr(language, images);
         }

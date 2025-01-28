@@ -1,7 +1,7 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Gdk;
 using System.IO;
 
 namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
@@ -425,7 +425,7 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
             return p;
         }
 
-        public Bitmap GetImage(ObjectDataSegment ods)
+        public Pixbuf GetImage(ObjectDataSegment ods)
         {
             if (SubtitleSegments == null)
             {
@@ -442,7 +442,7 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
             return ods.Image;
         }
 
-        public Bitmap GetImageFull()
+        public Pixbuf GetImageFull()
         {
             if (SubtitleSegments == null)
             {
@@ -462,17 +462,14 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats.TransportStream
                 }
             }
 
-            var bmp = new Bitmap(width, height);
+            var bmp = new Pixbuf(Colorspace.Rgb, true, 8, width, height);
             foreach (var ods in ObjectDataList)
             {
                 var odsImage = GetImage(ods);
                 if (odsImage != null)
                 {
                     var odsPoint = GetImagePosition(ods);
-                    using (var g = Graphics.FromImage(bmp))
-                    {
-                        g.DrawImageUnscaled(odsImage, odsPoint);
-                    }
+                    odsImage.CopyArea(0, 0, odsImage.Width, odsImage.Height, bmp, odsPoint.X, odsPoint.Y);
                 }
             }
             return bmp;

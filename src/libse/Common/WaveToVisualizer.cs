@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.Common
 {
@@ -257,7 +258,7 @@ namespace Nikse.SubtitleEdit.Core.Common
     {
         private string _loadFromDirectory;
 
-        public SpectrogramData(int fftSize, int imageWidth, double sampleDuration, IList<Bitmap> images)
+        public SpectrogramData(int fftSize, int imageWidth, double sampleDuration, IList<Pixbuf> images)
         {
             FftSize = fftSize;
             ImageWidth = imageWidth;
@@ -268,7 +269,7 @@ namespace Nikse.SubtitleEdit.Core.Common
         private SpectrogramData(string loadFromDirectory)
         {
             _loadFromDirectory = loadFromDirectory;
-            Images = new Bitmap[0];
+            Images = new Pixbuf[0];
         }
 
         public int FftSize { get; private set; }
@@ -277,7 +278,7 @@ namespace Nikse.SubtitleEdit.Core.Common
 
         public double SampleDuration { get; private set; }
 
-        public IList<Bitmap> Images { get; private set; }
+        public IList<Pixbuf> Images { get; private set; }
 
         public bool IsLoaded
         {
@@ -309,7 +310,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                 ImageWidth = Convert.ToInt32(doc.DocumentElement.SelectSingleNode("ImageWidth").InnerText, culture);
                 SampleDuration = Convert.ToDouble(doc.DocumentElement.SelectSingleNode("SampleDuration").InnerText, culture);
 
-                var images = new List<Bitmap>();
+                var images = new List<Pixbuf>();
                 var fileNames = Enumerable.Range(0, int.MaxValue)
                     .Select(n => Path.Combine(directory, n + ".gif"))
                     .TakeWhile(p => File.Exists(p));
@@ -318,7 +319,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                     // important that this does not lock file (do NOT use Image.FromFile(fileName) or alike!!!)
                     using (var ms = new MemoryStream(File.ReadAllBytes(fileName)))
                     {
-                        images.Add((Bitmap)Image.FromStream(ms));
+                        images.Add(new Pixbuf(ms));
                     }
                 }
                 Images = images;
@@ -342,7 +343,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                     // ignore
                 }
             }
-            Images = Array.Empty<Bitmap>();
+            Images = Array.Empty<Pixbuf>();
         }
 
         public static SpectrogramData FromDisk(string spectrogramDirectory)
@@ -802,7 +803,7 @@ namespace Nikse.SubtitleEdit.Core.Common
             // ignore negative delays for now (pretty sure it can't happen in mkv and some places pass in -1 by mistake)
             delaySampleCount = Math.Max(delaySampleCount, 0);
 
-            var images = new List<Bitmap>();
+            var images = new List<Pixbuf>();
             var drawer = new SpectrogramDrawer(fftSize);
             var readSampleDataValue = GetSampleDataReader();
             Task saveImageTask = null;
@@ -877,7 +878,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                 }
 
                 // generate spectrogram for this chunk
-                Bitmap bmp = drawer.Draw(chunkSamples);
+                Pixbuf bmp = drawer.Draw(chunkSamples);
                 images.Add(bmp);
 
                 // wait for previous image to finish saving
@@ -887,7 +888,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                 string imagePath = Path.Combine(spectrogramDirectory, iChunk + ".gif");
                 saveImageTask = Task.Factory.StartNew(() =>
                 {
-                    bmp.Save(imagePath, System.Drawing.Imaging.ImageFormat.Gif);
+                    bmp.Save(imagePath, "gif");
                 });
             }
 
@@ -971,12 +972,12 @@ namespace Nikse.SubtitleEdit.Core.Common
                 }
             }
 
-            public Bitmap Draw(double[] samples)
+            public Pixbuf Draw(double[] samples)
             {
                 int width = samples.Length / _nfft;
                 int height = _nfft / 2;
-                var bmp = new FastBitmap(new Bitmap(width, height));
-                bmp.LockImage();
+                var bmp = new FastBitmap(new Pixbuf(Colorspace.Rgb, true, 8, width, height));
+                // bmp.LockImage();
                 for (int x = 0; x < width; x++)
                 {
                     // process 2 segments offset by -1/4 and 1/4 fft size, resulting in 1/2 fft size
@@ -991,7 +992,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                         bmp.SetPixel(x, height - y - 1, _palette[colorIndex]);
                     }
                 }
-                bmp.UnlockImage();
+                // bmp.UnlockImage();
                 return bmp.GetBitmap();
             }
 

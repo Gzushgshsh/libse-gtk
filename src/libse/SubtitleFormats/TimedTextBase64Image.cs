@@ -2,7 +2,7 @@
 using Nikse.SubtitleEdit.Core.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Gdk;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -18,13 +18,12 @@ namespace Nikse.SubtitleEdit.Core.SubtitleFormats
 
             public string Text { get; set; }
 
-            public Bitmap GetBitmap()
+            public Pixbuf GetBitmap()
             {
                 var data = Convert.FromBase64String(Text);
                 using (var stream = new MemoryStream(data, 0, data.Length))
                 {
-                    var bitmap = (Bitmap)Image.FromStream(stream);
-                    return bitmap;
+                    return new Pixbuf(stream);
                 }
             }
 

@@ -1,6 +1,8 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using System;
-using System.Drawing;
+using Color = System.Drawing.Color;
+using ContentAlignment = System.Drawing.ContentAlignment;
+using Gdk;
 using System.IO;
 using System.Text;
 
@@ -138,7 +140,7 @@ namespace Nikse.SubtitleEdit.Core.VobSub
             return ms.ToArray();
         }
 
-        public void WriteParagraph(Paragraph p, Bitmap bmp, ContentAlignment alignment, Point? overridePosition = null) // inspired by code from SubtitleCreator
+        public void WriteParagraph(Paragraph p, Pixbuf bmp, ContentAlignment alignment, Point? overridePosition = null) // inspired by code from SubtitleCreator
         {
             // timestamp: 00:00:33:900, filepos: 000000000
             _idx.AppendLine($"timestamp: {p.StartTime.Hours:00}:{p.StartTime.Minutes:00}:{p.StartTime.Seconds:00}:{p.StartTime.Milliseconds:000}, filepos: {_subFile.Position.ToString("X").PadLeft(9, '0').ToLowerInvariant()}");

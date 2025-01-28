@@ -1,5 +1,5 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
-using System.Drawing;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.Interfaces
 {

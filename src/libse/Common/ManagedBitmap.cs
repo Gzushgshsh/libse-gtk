@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using Color = System.Drawing.Color;
+using Gdk;
 using System.IO;
 using System.IO.Compression;
 
@@ -57,7 +58,7 @@ namespace Nikse.SubtitleEdit.Core.Common
             }
         }
 
-        public ManagedBitmap(Bitmap oldBitmap)
+        public ManagedBitmap(Pixbuf oldBitmap)
         {
             var nbmp = new NikseBitmap(oldBitmap);
             Width = nbmp.Width;
@@ -181,7 +182,7 @@ namespace Nikse.SubtitleEdit.Core.Common
             return newRectangle;
         }
 
-        public Bitmap ToOldBitmap()
+        public Pixbuf ToOldBitmap()
         {
             var nbmp = new NikseBitmap(Width, Height);
             for (int y = 0; y < Height; y++)

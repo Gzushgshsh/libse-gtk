@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Pango;
+using Cairo;
 using System.Linq;
 
 namespace Nikse.SubtitleEdit.Core.Common
@@ -15,9 +16,18 @@ namespace Nikse.SubtitleEdit.Core.Common
         public double TotalLength => Lines.Sum(p => p.Length);
         public double TotalLengthPixels => LengthPixels.Sum(p => p) - SpaceLengthPixels;
 
-        private static readonly Graphics Graphics = Graphics.FromHwnd(IntPtr.Zero);
-        private static readonly Font DefaultFont = SystemFonts.DefaultFont;
+        private static readonly Layout layout = InitMeasureString();
+        // private static readonly Font DefaultFont = SystemFonts.DefaultFont;
         private static readonly object GdiLock = new object();
+
+        private static Layout InitMeasureString()
+        {
+            using (ImageSurface surface = new ImageSurface(Format.Argb32, 1, 1))
+            using (Cairo.Context context = new Cairo.Context(surface))
+            {
+                return CairoHelper.CreateLayout(context); // TODO: this init with SystemFonts.DefaultFont equivalent value?
+            } 
+        }
 
         private static float GetWidth(string text)
         {
@@ -30,7 +40,8 @@ namespace Nikse.SubtitleEdit.Core.Common
             {
                 try
                 {
-                    return Graphics.MeasureString(text, DefaultFont).Width;
+                    layout.GetPixelSize(out int with, out _);
+                    return with;
                 }
                 catch
                 {

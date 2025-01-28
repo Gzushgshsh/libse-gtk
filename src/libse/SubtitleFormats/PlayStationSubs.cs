@@ -1,10 +1,11 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
 using System.IO;
 using System.Text;
 using Nikse.SubtitleEdit.Core.Interfaces;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.SubtitleFormats
 {
@@ -134,7 +135,7 @@ namespace Nikse.SubtitleEdit.Core.SubtitleFormats
             subtitle.Renumber();
         }
 
-        public Bitmap GetSubtitleBitmap(int index2, bool crop = true)
+        public Pixbuf GetSubtitleBitmap(int index2, bool crop = true)
         {
             var index = 30;
             var paragraphIndex = 0;
@@ -171,7 +172,7 @@ namespace Nikse.SubtitleEdit.Core.SubtitleFormats
                                     index += 4; // CRC
                                     var b = new byte[index - start];
                                     Array.Copy(_buffer, start, b, 0, b.Length);
-                                    return new Bitmap(new MemoryStream(b));
+                                    return new Pixbuf(new MemoryStream(b));
                                 }
 
                                 paragraphIndex++;
@@ -192,7 +193,7 @@ namespace Nikse.SubtitleEdit.Core.SubtitleFormats
                 }
             }
 
-            return new Bitmap(1, 1);
+            return new Pixbuf(Colorspace.Rgb, true, 8, 1, 1);
         }
 
         public bool GetIsForced(int index)

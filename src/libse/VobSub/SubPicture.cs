@@ -1,7 +1,8 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Color = System.Drawing.Color;
+using Gdk;
 using System.Runtime.CompilerServices;
 
 namespace Nikse.SubtitleEdit.Core.VobSub
@@ -67,16 +68,16 @@ namespace Nikse.SubtitleEdit.Core.VobSub
         /// <param name="useCustomColors">Use custom colors instead of lookup table</param>
         /// <param name="crop">Crop result image</param>
         /// <returns>Subtitle image</returns>
-        public Bitmap GetBitmap(List<Color> colorLookupTable, Color background, Color pattern, Color emphasis1, Color emphasis2, bool useCustomColors, bool crop = true)
+        public Pixbuf GetBitmap(List<Color> colorLookupTable, Color background, Color pattern, Color emphasis1, Color emphasis2, bool useCustomColors, bool crop = true)
         {
             var fourColors = new List<Color> { background, pattern, emphasis1, emphasis2 };
             return ParseDisplayControlCommands(true, colorLookupTable, fourColors, useCustomColors, crop);
         }
 
-        private Bitmap ParseDisplayControlCommands(bool createBitmap, List<Color> colorLookUpTable, List<Color> fourColors, bool useCustomColors, bool crop)
+        private Pixbuf ParseDisplayControlCommands(bool createBitmap, List<Color> colorLookUpTable, List<Color> fourColors, bool useCustomColors, bool crop)
         {
             ImageDisplayArea = new Rectangle();
-            Bitmap bmp = null;
+            Pixbuf bmp = null;
             var displayControlSequenceTableAddresses = new List<int>();
             var imageTopFieldDataAddress = 0;
             var imageBottomFieldDataAddress = 0;
@@ -230,22 +231,27 @@ namespace Nikse.SubtitleEdit.Core.VobSub
             }
         }
 
-        private Bitmap GenerateBitmap(Rectangle imageDisplayArea, int imageTopFieldDataAddress, int imageBottomFieldDataAddress, List<Color> fourColors, bool crop)
+        private Pixbuf GenerateBitmap(Rectangle imageDisplayArea, int imageTopFieldDataAddress, int imageBottomFieldDataAddress, List<Color> fourColors, bool crop)
         {
             if (imageDisplayArea.Width <= 0 || imageDisplayArea.Height <= 0)
             {
-                return new Bitmap(1, 1);
+                return new Pixbuf(Colorspace.Rgb, true, 8, 1, 1);
             }
 
-            var bmp = new Bitmap(imageDisplayArea.Width + 1, imageDisplayArea.Height + 1);
+            var bmp = new Pixbuf(Colorspace.Rgb, true, 8, imageDisplayArea.Width + 1, imageDisplayArea.Height + 1);
             if (fourColors[0] != Color.Transparent)
             {
-                var gr = Graphics.FromImage(bmp);
-                gr.FillRectangle(new SolidBrush(fourColors[0]), new Rectangle(0, 0, bmp.Width, bmp.Height));
-                gr.Dispose();
+                using (Cairo.Surface surface = CairoHelper.SurfaceCreateFromPixbuf(bmp, 1, null))
+                using (Cairo.Context context = new Cairo.Context(surface))
+                {
+                    var c = fourColors[0];
+                    context.SetSourceRGBA(c.R / byte.MaxValue, c.G / byte.MaxValue, c.B / byte.MaxValue, c.A / byte.MaxValue);
+                    context.Rectangle(0, 0, bmp.Width, bmp.Height);
+                    context.Fill();
+                }
             }
             var fastBmp = new FastBitmap(bmp);
-            fastBmp.LockImage();
+            fastBmp.RestartPosition();
             GenerateBitmap(_data, fastBmp, 0, imageTopFieldDataAddress, fourColors, 2);
             GenerateBitmap(_data, fastBmp, 1, imageBottomFieldDataAddress, fourColors, 2);
             var cropped = CropBitmapAndUnlock(fastBmp, fourColors[0], crop);
@@ -253,7 +259,7 @@ namespace Nikse.SubtitleEdit.Core.VobSub
             return cropped;
         }
 
-        private static Bitmap CropBitmapAndUnlock(FastBitmap bmp, Color backgroundColor, bool crop)
+        private static Pixbuf CropBitmapAndUnlock(FastBitmap bmp, Color backgroundColor, bool crop)
         {
             var y = 0;
             var c = backgroundColor;
@@ -377,15 +383,14 @@ namespace Nikse.SubtitleEdit.Core.VobSub
                 }
             }
 
-            bmp.UnlockImage();
+            // bmp.UnlockImage();
             var bmpImage = bmp.GetBitmap();
             if (bmpImage.Width > 1 && bmpImage.Height > 1 && maxX - minX > 0 && maxY - minY > 0)
             {
-                var bmpCrop = bmpImage.Clone(new Rectangle(minX, minY, maxX - minX, maxY - minY), bmpImage.PixelFormat);
-                return bmpCrop;
+                return new Pixbuf(bmpImage, minX, minY, maxX - minX, maxY - minY);
             }
 
-            return (Bitmap)bmpImage.Clone();
+            return (Pixbuf)bmpImage.Clone();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

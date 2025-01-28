@@ -1,5 +1,6 @@
 ﻿using Nikse.SubtitleEdit.Core.SubtitleFormats;
-using System.Drawing;
+using Color = System.Drawing.Color;
+using ColorTranslator = System.Drawing.ColorTranslator;
 using System.Globalization;
 using System.Text;
 
