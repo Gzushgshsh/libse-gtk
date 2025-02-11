@@ -35,6 +35,7 @@
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.labelEngine = new System.Windows.Forms.Label();
             this.groupBoxSettings = new System.Windows.Forms.GroupBox();
+            this.checkBoxVoiceOver = new System.Windows.Forms.CheckBox();
             this.labelLanguage = new System.Windows.Forms.Label();
             this.linkLabelCustomAudio = new System.Windows.Forms.LinkLabel();
             this.checkBoxAudioEncoding = new System.Windows.Forms.CheckBox();
@@ -71,7 +72,7 @@
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOK.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.buttonOK.Location = new System.Drawing.Point(720, 486);
+            this.buttonOK.Location = new System.Drawing.Point(676, 478);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
             this.buttonOK.TabIndex = 100;
@@ -84,7 +85,7 @@
             this.labelProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelProgress.AutoSize = true;
             this.labelProgress.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.labelProgress.Location = new System.Drawing.Point(12, 463);
+            this.labelProgress.Location = new System.Drawing.Point(12, 455);
             this.labelProgress.Name = "labelProgress";
             this.labelProgress.Size = new System.Drawing.Size(70, 13);
             this.labelProgress.TabIndex = 9;
@@ -94,7 +95,7 @@
             // 
             this.buttonGenerateTTS.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonGenerateTTS.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.buttonGenerateTTS.Location = new System.Drawing.Point(648, 453);
+            this.buttonGenerateTTS.Location = new System.Drawing.Point(604, 445);
             this.buttonGenerateTTS.Name = "buttonGenerateTTS";
             this.buttonGenerateTTS.Size = new System.Drawing.Size(228, 23);
             this.buttonGenerateTTS.TabIndex = 90;
@@ -106,9 +107,9 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(12, 486);
+            this.progressBar1.Location = new System.Drawing.Point(12, 478);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(699, 10);
+            this.progressBar1.Size = new System.Drawing.Size(655, 10);
             this.progressBar1.TabIndex = 12;
             // 
             // labelEngine
@@ -125,6 +126,7 @@
             // 
             this.groupBoxSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBoxSettings.Controls.Add(this.checkBoxVoiceOver);
             this.groupBoxSettings.Controls.Add(this.nikseUpDownStability);
             this.groupBoxSettings.Controls.Add(this.nikseUpDownSimilarity);
             this.groupBoxSettings.Controls.Add(this.labelSimilarity);
@@ -148,10 +150,21 @@
             this.groupBoxSettings.Controls.Add(this.nikseComboBoxEngine);
             this.groupBoxSettings.Location = new System.Drawing.Point(15, 12);
             this.groupBoxSettings.Name = "groupBoxSettings";
-            this.groupBoxSettings.Size = new System.Drawing.Size(391, 435);
+            this.groupBoxSettings.Size = new System.Drawing.Size(391, 427);
             this.groupBoxSettings.TabIndex = 1;
             this.groupBoxSettings.TabStop = false;
             this.groupBoxSettings.Text = "Settings";
+            // 
+            // checkBoxVoiceOver
+            // 
+            this.checkBoxVoiceOver.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.checkBoxVoiceOver.AutoSize = true;
+            this.checkBoxVoiceOver.Location = new System.Drawing.Point(30, 402);
+            this.checkBoxVoiceOver.Name = "checkBoxVoiceOver";
+            this.checkBoxVoiceOver.Size = new System.Drawing.Size(96, 17);
+            this.checkBoxVoiceOver.TabIndex = 44;
+            this.checkBoxVoiceOver.Text = "Use Voiceover";
+            this.checkBoxVoiceOver.UseVisualStyleBackColor = true;
             // 
             // labelLanguage
             // 
@@ -167,7 +180,7 @@
             // 
             this.linkLabelCustomAudio.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.linkLabelCustomAudio.AutoSize = true;
-            this.linkLabelCustomAudio.Location = new System.Drawing.Point(168, 400);
+            this.linkLabelCustomAudio.Location = new System.Drawing.Point(163, 385);
             this.linkLabelCustomAudio.Name = "linkLabelCustomAudio";
             this.linkLabelCustomAudio.Size = new System.Drawing.Size(45, 13);
             this.linkLabelCustomAudio.TabIndex = 43;
@@ -179,7 +192,7 @@
             // 
             this.checkBoxAudioEncoding.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBoxAudioEncoding.AutoSize = true;
-            this.checkBoxAudioEncoding.Location = new System.Drawing.Point(32, 401);
+            this.checkBoxAudioEncoding.Location = new System.Drawing.Point(30, 384);
             this.checkBoxAudioEncoding.Name = "checkBoxAudioEncoding";
             this.checkBoxAudioEncoding.Size = new System.Drawing.Size(137, 17);
             this.checkBoxAudioEncoding.TabIndex = 42;
@@ -212,7 +225,7 @@
             this.checkBoxShowPreview.AutoSize = true;
             this.checkBoxShowPreview.Checked = true;
             this.checkBoxShowPreview.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxShowPreview.Location = new System.Drawing.Point(17, 352);
+            this.checkBoxShowPreview.Location = new System.Drawing.Point(17, 340);
             this.checkBoxShowPreview.Name = "checkBoxShowPreview";
             this.checkBoxShowPreview.Size = new System.Drawing.Size(115, 17);
             this.checkBoxShowPreview.TabIndex = 40;
@@ -245,7 +258,7 @@
             this.checkBoxAddToVideoFile.AutoSize = true;
             this.checkBoxAddToVideoFile.Checked = true;
             this.checkBoxAddToVideoFile.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxAddToVideoFile.Location = new System.Drawing.Point(17, 376);
+            this.checkBoxAddToVideoFile.Location = new System.Drawing.Point(17, 364);
             this.checkBoxAddToVideoFile.Name = "checkBoxAddToVideoFile";
             this.checkBoxAddToVideoFile.Size = new System.Drawing.Size(176, 17);
             this.checkBoxAddToVideoFile.TabIndex = 41;
@@ -291,7 +304,7 @@
             this.listViewActors.HideSelection = false;
             this.listViewActors.Location = new System.Drawing.Point(412, 42);
             this.listViewActors.Name = "listViewActors";
-            this.listViewActors.Size = new System.Drawing.Size(464, 405);
+            this.listViewActors.Size = new System.Drawing.Size(420, 397);
             this.listViewActors.TabIndex = 40;
             this.listViewActors.UseCompatibleStateImageBehavior = false;
             this.listViewActors.View = System.Windows.Forms.View.Details;
@@ -326,7 +339,7 @@
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.buttonCancel.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.buttonCancel.Location = new System.Drawing.Point(801, 486);
+            this.buttonCancel.Location = new System.Drawing.Point(757, 478);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 101;
@@ -349,7 +362,7 @@
             0,
             0,
             0});
-            this.nikseUpDownStability.Location = new System.Drawing.Point(102, 298);
+            this.nikseUpDownStability.Location = new System.Drawing.Point(102, 296);
             this.nikseUpDownStability.Maximum = new decimal(new int[] {
             100,
             0,
@@ -387,7 +400,7 @@
             0,
             0,
             0});
-            this.nikseUpDownSimilarity.Location = new System.Drawing.Point(251, 298);
+            this.nikseUpDownSimilarity.Location = new System.Drawing.Point(251, 296);
             this.nikseUpDownSimilarity.Maximum = new decimal(new int[] {
             100,
             0,
@@ -413,7 +426,7 @@
             // labelSimilarity
             // 
             this.labelSimilarity.AutoSize = true;
-            this.labelSimilarity.Location = new System.Drawing.Point(198, 302);
+            this.labelSimilarity.Location = new System.Drawing.Point(198, 300);
             this.labelSimilarity.Name = "labelSimilarity";
             this.labelSimilarity.Size = new System.Drawing.Size(47, 13);
             this.labelSimilarity.TabIndex = 99;
@@ -422,7 +435,7 @@
             // labelStability
             // 
             this.labelStability.AutoSize = true;
-            this.labelStability.Location = new System.Drawing.Point(15, 302);
+            this.labelStability.Location = new System.Drawing.Point(15, 300);
             this.labelStability.Name = "labelStability";
             this.labelStability.Size = new System.Drawing.Size(43, 13);
             this.labelStability.TabIndex = 97;
@@ -559,7 +572,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(888, 521);
+            this.ClientSize = new System.Drawing.Size(844, 513);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.labelActors);
             this.Controls.Add(this.listViewActors);
@@ -624,5 +637,6 @@
         private Controls.NikseUpDown nikseUpDownSimilarity;
         private Controls.NikseLabel labelSimilarity;
         private Controls.NikseLabel labelStability;
+        private System.Windows.Forms.CheckBox checkBoxVoiceOver;
     }
 }
