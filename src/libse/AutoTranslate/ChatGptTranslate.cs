@@ -39,7 +39,7 @@ namespace Nikse.SubtitleEdit.Core.AutoTranslate
             var indexOfStartThink = translation.IndexOf("<think>");
             var indexOfEndThink = translation.IndexOf("</think>");
             if (indexOfStartThink >= 0 && indexOfEndThink > indexOfStartThink)
-            { 
+            {
                 translation = translation.Remove(indexOfStartThink, indexOfEndThink - indexOfStartThink + 8).Trim();
             }
 
@@ -145,7 +145,8 @@ namespace Nikse.SubtitleEdit.Core.AutoTranslate
                MakePair("Cantonese","zh"),
                MakePair("Catalan","ca"),
                MakePair("Chhattisgarhi",""),
-               MakePair("Chinese","zh"),
+               MakePair("Chinese (Simplified)", "zho-Hans"),
+               MakePair("Chinese (Traditional)","zh-Hant"),
                MakePair("Croatian","hr"),
                MakePair("Czech","cs"),
                MakePair("Danish","da"),
@@ -212,6 +213,8 @@ namespace Nikse.SubtitleEdit.Core.AutoTranslate
                MakePair("Slovenian","sl"),
                MakePair("Spanish","es"),
                MakePair("Swedish","sv"),
+               MakePair("Tatar","tt"),
+               MakePair("Thai","th"),
                MakePair("Turkish","tr"),
                MakePair("Ukrainian","uk"),
                MakePair("Uyghur","ug"),
