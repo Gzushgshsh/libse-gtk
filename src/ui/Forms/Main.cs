@@ -1792,6 +1792,7 @@ namespace Nikse.SubtitleEdit.Forms
             startNumberingFromToolStripMenuItem.Text = _language.Menu.Tools.StartNumberingFrom;
             removeTextForHearImpairedToolStripMenuItem.Text = _language.Menu.Tools.RemoveTextForHearingImpaired;
             convertColorsToDialogToolStripMenuItem.Text = _language.Menu.Tools.ConvertColorsToDialog;
+            toolStripMenuItemConvertActors.Text = _language.Menu.Tools.ConvertActors;
             ChangeCasingToolStripMenuItem.Text = _language.Menu.Tools.ChangeCasing;
             toolStripMenuItemChangeFrameRate2.Text = _language.Menu.Tools.ChangeFrameRate;
             changeSpeedInPercentToolStripMenuItem.Text = _language.Menu.Tools.ChangeSpeedInPercent;
@@ -31273,13 +31274,11 @@ namespace Nikse.SubtitleEdit.Forms
         {
             if (_subtitle?.Paragraphs.Count > 0 && _networkSession == null)
             {
-                toolStripSeparator22.Visible = true;
                 toolStripMenuItemMakeEmptyFromCurrent.Visible = !SubtitleListview1.IsOriginalTextColumnVisible;
                 toolStripMenuItemShowOriginalInPreview.Checked = Configuration.Settings.General.ShowOriginalAsPreviewIfAvailable;
             }
             else
             {
-                toolStripSeparator22.Visible = false;
                 toolStripMenuItemMakeEmptyFromCurrent.Visible = false;
                 toolStripMenuItemShowOriginalInPreview.Checked = false;
             }
@@ -37245,6 +37244,32 @@ namespace Nikse.SubtitleEdit.Forms
                 if (form.ShowDialog(this) != DialogResult.OK)
                 {
                     return;
+                }
+            }
+        }
+
+        private void toolStripMenuItemConvertActors_Click(object sender, EventArgs e)
+        {
+            if (!IsSubtitleLoaded)
+            {
+                DisplaySubtitleNotLoadedMessage();
+                return;
+            }
+
+            ReloadFromSourceView();
+            using (var form = new ConvertActor())
+            {
+                form.Initialize(_subtitle, GetCurrentSubtitleFormat());
+                if (form.ShowDialog(this) == DialogResult.OK)
+                {
+                    Cursor = Cursors.WaitCursor;
+                    SaveSubtitleListviewIndices();
+                    MakeHistoryForUndo(_language.BeforeConvertingColorsToDialog);
+                    ShowStatus(_language.ConvertedColorsToDialog);
+                    UpdateSourceView();
+                    SubtitleListview1.Fill(_subtitle, _subtitleOriginal);
+                    RestoreSubtitleListviewIndices();
+                    Cursor = Cursors.Default;
                 }
             }
         }
