@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Color = System.Drawing.Color;
 using Gdk;
 using System.Runtime.CompilerServices;
+using Lucas.SubtitleEdit.SysDrawExpansions;
 
 namespace Nikse.SubtitleEdit.Core.VobSub
 {
@@ -244,8 +245,7 @@ namespace Nikse.SubtitleEdit.Core.VobSub
                 using (Cairo.Surface surface = CairoHelper.SurfaceCreateFromPixbuf(bmp, 1, null))
                 using (Cairo.Context context = new Cairo.Context(surface))
                 {
-                    var c = fourColors[0];
-                    context.SetSourceRGBA(c.R / byte.MaxValue, c.G / byte.MaxValue, c.B / byte.MaxValue, c.A / byte.MaxValue);
+                    context.SetSourceColor(fourColors[0].ToCairo());
                     context.Rectangle(0, 0, bmp.Width, bmp.Height);
                     context.Fill();
                 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Color = System.Drawing.Color;
 using Gdk;
 using Cairo;
+using Lucas.SubtitleEdit.SysDrawExpansions;
 
 namespace Nikse.SubtitleEdit.Core.ContainerFormats
 {
@@ -108,8 +109,7 @@ namespace Nikse.SubtitleEdit.Core.ContainerFormats
                 using (Surface surface = CairoHelper.SurfaceCreateFromPixbuf(bmp, 1, null))
                 using (Context context = new Context(surface))
                 {
-                    Color c = fourColors[0];
-                    context.SetSourceRGBA(c.R / byte.MaxValue, c.B / byte.MaxValue, c.B / byte.MaxValue, c.A / byte.MaxValue);
+                    context.SetSourceColor(fourColors[0].ToCairo());
                     context.Rectangle(new Cairo.Rectangle(0, 0, bmp.Width, bmp.Height));
                     context.Fill();
                 }
