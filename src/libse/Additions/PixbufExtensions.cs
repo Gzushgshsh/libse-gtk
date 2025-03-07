@@ -2,7 +2,7 @@
 using Gdk;
 using System.Runtime.InteropServices;
 
-namespace Lucas.SubtitleEdit.GtkExpansions.PixbufExtensions
+namespace Lucas.SubtitleEdit.GdkExpansions.PixbufExtensions
 {
     // TODO: Use FastBitmap to better perfomace?
     public static class PixbufExtensions

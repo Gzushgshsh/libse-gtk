@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Color = System.Drawing.Color;
 using Gdk;
 using System.Runtime.InteropServices;
-using Lucas.SubtitleEdit.GtkExpansions.PixbufExtensions;
+using Lucas.SubtitleEdit.GdkExpansions.PixbufExtensions;
 
 namespace Nikse.SubtitleEdit.Core.CDG
 {
