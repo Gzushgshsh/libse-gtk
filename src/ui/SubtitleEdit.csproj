@@ -301,6 +301,9 @@
     <EmbeddedResource Remove="Forms\GetDictionaries.resx" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Icons\mpc-hc.png" />
+    <None Remove="Icons\mpv.png" />
+    <None Remove="Icons\vlc.png" />
     <None Remove="Resources\TtsMurfVoices.zip" />
   </ItemGroup>
   <Target Name="InvokeBuildHelpers" BeforeTargets="BeforeCompile;CoreCompile">

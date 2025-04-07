@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Tests.Logic.SubtitleFormats
 {
@@ -885,7 +884,33 @@ Dialogue: Marked=0,0:00:01.00,0:00:03.00,Default,NTP,0000,0000,0000,!Effect," + 
             Assert.IsTrue(text.Contains(" Italic=\"yes\"") && text.Contains(" Color=\"FFFF0000\""));
         }
 
+        [TestMethod]
+        public void DcinemaInteropItalicAndItalicOff()
+        {
+            var raw = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<DCSubtitle Version=\"1.0\">\r\n<SubtitleID>c1134f81-b1c0-4ec8-bed7-65ccee1495ba</SubtitleID>\r\n<MovieTitle>ItalicTest</MovieTitle>\r\n<ReelNumber>1</ReelNumber>\r\n<Language>de</Language>\r\n<LoadFont Id=\"Font1\" URI=\"arial.ttf\" />\r\n<Font Id=\"Font1\" Italic=\"yes\" Effect=\"border\">\r\n<Subtitle SpotNumber=\"1\" TimeIn=\"00:04:09:031\" TimeOut=\"00:04:10:052\" FadeUpTime=\"0\" FadeDownTime=\"0\">\r\n    <Text VAlign=\"bottom\" VPosition=\"8.00\"><Font Italic=\"no\">Spot1 regualar</Font> </Text>\r\n</Subtitle>\r\n<Subtitle SpotNumber=\"2\" TimeIn=\"00:04:12:072\" TimeOut=\"00:04:14:072\" FadeUpTime=\"0\" FadeDownTime=\"0\">\r\n    <Text VAlign=\"bottom\" VPosition=\"14.00\"><Font Italic=\"no\">Spot2 regular</Font> </Text>\r\n    <Text VAlign=\"bottom\" VPosition=\"8.00\"><Font Italic=\"no\">Spot2 regualar</Font> </Text>\r\n</Subtitle>\r\n<Subtitle SpotNumber=\"3\" TimeIn=\"00:04:46:187\" TimeOut=\"00:04:49:187\" FadeUpTime=\"0\" FadeDownTime=\"0\">\r\n    <Text VAlign=\"bottom\" VPosition=\"8.00\">Spot3 italic</Text>\r\n</Subtitle>\r\n</Font>\r\n</DCSubtitle>";
+            var target = new DCinemaInterop();
+            var subtitle = new Subtitle();
+            target.LoadSubtitle(subtitle, raw.SplitToLines(), null);          
+            Assert.AreEqual("Spot1 regualar", subtitle.Paragraphs[0].Text);
+            Assert.AreEqual($"Spot2 regular{Environment.NewLine}Spot2 regualar", subtitle.Paragraphs[1].Text);
+            Assert.AreEqual("<i>Spot3 italic</i>", subtitle.Paragraphs[2].Text);
+        }
+
         #endregion DCinema interop (.xml)
+
+        #region DCinemaSmpte2014
+        [TestMethod]
+        public void DCinemaSmpte2014ItalicAndItalicOff()
+        {
+            var raw = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<SubtitleReel xmlns=\"http://www.smpte-ra.org/schemas/428-7/2014/DCST\">\r\n<Id>urn:uuid:49005023-5c1a-4676-b3ca-c16c8d5835a5</Id>\r\n<ContentTitleText>2025_64772_dcp1</ContentTitleText>\r\n<IssueDate>2025-04-04T11:20:33</IssueDate>\r\n<ReelNumber>1</ReelNumber>\r\n<Language>de</Language>\r\n<EditRate>24 1</EditRate>\r\n<TimeCodeRate>24</TimeCodeRate>\r\n<StartTime>00:00:00:00</StartTime>\r\n<LoadFont ID=\"Font1\">urn:uuid:5e5dda85-e777-4d6d-a730-5aeb3790240a</LoadFont>\r\n<SubtitleList>\r\n<Font ID=\"Font1\" Italic=\"yes\" Effect=\"border\">\r\n<Subtitle SpotNumber=\"1\" TimeIn=\"00:04:09:03\" TimeOut=\"00:04:10:05\" FadeUpTime=\"00:00:00:00\" FadeDownTime=\"00:00:00:00\">\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"8.00\"><Font Italic=\"no\">Spot1 regular</Font></Text>\r\n</Subtitle>\r\n<Subtitle SpotNumber=\"2\" TimeIn=\"00:04:12:07\" TimeOut=\"00:04:14:07\" FadeUpTime=\"00:00:00:00\" FadeDownTime=\"00:00:00:00\">\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"14.00\"><Font Italic=\"no\">Spot2 regular</Font></Text>\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"8.00\"><Font Italic=\"no\">Spot2 regular</Font></Text>\r\n</Subtitle>\r\n<Subtitle SpotNumber=\"3\" TimeIn=\"00:04:46:18\" TimeOut=\"00:04:49:18\" FadeUpTime=\"00:00:00:00\" FadeDownTime=\"00:00:00:00\">\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"8.00\">Spot3 italic</Text>\r\n</Subtitle>\r\n<Subtitle SpotNumber=\"4\" TimeIn=\"00:04:51:04\" TimeOut=\"00:04:53:21\" FadeUpTime=\"00:00:00:00\" FadeDownTime=\"00:00:00:00\">\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"8.00\">Spot4 italic</Text>\r\n</Subtitle>\r\n<Subtitle SpotNumber=\"5\" TimeIn=\"00:11:13:12\" TimeOut=\"00:11:14:21\" FadeUpTime=\"00:00:00:00\" FadeDownTime=\"00:00:00:00\">\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"14.00\"><Font Italic=\"no\">Spot5 regular</Font></Text>\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"8.00\"><Font Italic=\"no\">Spot5 regular</Font></Text>\r\n</Subtitle>\r\n<Subtitle SpotNumber=\"6\" TimeIn=\"00:11:34:00\" TimeOut=\"00:11:37:23\" FadeUpTime=\"00:00:00:00\" FadeDownTime=\"00:00:00:00\">\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"14.00\">Spot6 italic</Text>\r\n    <Text Halign=\"center\" Hposition=\"0.00\" Valign=\"bottom\" Vposition=\"8.00\">Spot6 italic</Text>\r\n</Subtitle>\r\n</Font>\r\n</SubtitleList>\r\n</SubtitleReel>\r\n";
+            var target = new DCinemaSmpte2014();
+            var subtitle = new Subtitle();
+            target.LoadSubtitle(subtitle, raw.SplitToLines(), null);
+            Assert.AreEqual("Spot1 regular", subtitle.Paragraphs[0].Text);
+            Assert.AreEqual($"Spot2 regular{Environment.NewLine}Spot2 regular", subtitle.Paragraphs[1].Text);
+            Assert.AreEqual("<i>Spot3 italic</i>", subtitle.Paragraphs[2].Text);
+        }
+        #endregion DCinemaSmpte2014
 
         #region MicroDVD
 

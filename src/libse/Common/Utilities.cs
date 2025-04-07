@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using Nikse.SubtitleEdit.Core.VobSub;
+using Gdk;
 
 namespace Nikse.SubtitleEdit.Core.Common
 {
@@ -2657,19 +2658,6 @@ namespace Nikse.SubtitleEdit.Core.Common
             return text;
         }
 
-        /// <summary>
-        /// Creates a task that will complete after a time delay.
-        /// </summary>
-        /// <param name="millisecondsDelay">The number of milliseconds to wait before completing the returned task.</param>
-        /// <returns>A task that represents the time delay.</returns>
-        public static Task TaskDelay(int millisecondsDelay)
-        {
-            var tcs = new TaskCompletionSource<object>();
-            var t = new System.Threading.Timer(_ => tcs.SetResult(null));
-            t.Change(millisecondsDelay, -1);
-            return tcs.Task;
-        }
-
         public static SubtitleFormat LoadMatroskaTextSubtitle(MatroskaTrackInfo matroskaSubtitleInfo, MatroskaFile matroska, List<MatroskaSubtitle> sub, Subtitle subtitle)
         {
             if (subtitle == null)
@@ -3313,6 +3301,11 @@ namespace Nikse.SubtitleEdit.Core.Common
         public static SubtitleFormat GetSubtitleFormatByFriendlyName(object value)
         {
             throw new NotImplementedException();
+        }
+
+        public static string PngToBase64String(Pixbuf bitmap)
+        {
+            return Convert.ToBase64String(bitmap.SaveToBuffer("png"));
         }
     }
 }

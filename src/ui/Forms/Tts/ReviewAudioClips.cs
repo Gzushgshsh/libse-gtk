@@ -24,6 +24,7 @@ namespace Nikse.SubtitleEdit.Forms.Tts
         private LibMpvDynamic _libMpv;
         private Timer _mpvDoneTimer;
         private TextToSpeech.TextToSpeechEngine _engine;
+        System.Media.SoundPlayer _soundPlayer;
 
         public ReviewAudioClips(TextToSpeech textToSpeech, Subtitle subtitle, List<TextToSpeech.FileNameAndSpeedFactor> fileNames, TextToSpeech.TextToSpeechEngine engine)
         {
@@ -83,7 +84,7 @@ namespace Nikse.SubtitleEdit.Forms.Tts
 
         private void buttonOK_Click(object sender, EventArgs e)
         {
-            _libMpv?.Stop();
+            Stop();
             for (var index = 0; index < listViewAudioClips.Items.Count; index++)
             {
                 if (!listViewAudioClips.Items[index].Checked)
@@ -93,6 +94,20 @@ namespace Nikse.SubtitleEdit.Forms.Tts
             }
 
             DialogResult = DialogResult.OK;
+        }
+
+        private void Stop()
+        {
+            try
+            {
+                _mpvDoneTimer?.Stop();
+                _libMpv?.Stop();
+                _soundPlayer?.Stop();
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         private void VoicePreviewList_Load(object sender, EventArgs e)
@@ -156,8 +171,9 @@ namespace Nikse.SubtitleEdit.Forms.Tts
             }
             else
             {
-                using (var soundPlayer = new System.Media.SoundPlayer(waveFileName))
+                using (System.Media.SoundPlayer soundPlayer = new System.Media.SoundPlayer(waveFileName))
                 {
+                    _soundPlayer = soundPlayer;
                     soundPlayer.PlaySync();
                 }
 
@@ -206,7 +222,7 @@ namespace Nikse.SubtitleEdit.Forms.Tts
                 return;
             }
 
-            _libMpv?.Stop();
+            Stop();
             buttonPlay.Enabled = false;
             _playing = true;
             _abortPlay = false;
@@ -216,7 +232,7 @@ namespace Nikse.SubtitleEdit.Forms.Tts
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
-            _libMpv?.Stop();
+            Stop();
             _abortPlay = true;
             _playing = false;
             buttonPlay.Enabled = true;
@@ -266,26 +282,33 @@ namespace Nikse.SubtitleEdit.Forms.Tts
                 return;
             }
 
+            _abortPlay = true;
+            Application.DoEvents();
             buttonStop_Click(null, null);
 
-            var idx = listViewAudioClips.SelectedItems[0].Index;
-            using (var form = new RegenerateAudioClip(_textToSpeech, _subtitle, idx, _engine))
+            TaskDelayHelper.RunDelayed(TimeSpan.FromMilliseconds(10), () =>
             {
-                var dr = form.ShowDialog(this);
-                if (dr != DialogResult.OK)
+                var idx = listViewAudioClips.SelectedItems[0].Index;
+                using (var form = new RegenerateAudioClip(_textToSpeech, _subtitle, idx, _engine))
                 {
-                    return;
-                }
+                    buttonStop_Click(null, null);
 
-                listViewAudioClips.Items[idx].SubItems[5].Text = _subtitle.Paragraphs[idx].Text;
+                    var dr = form.ShowDialog(this);
+                    if (dr != DialogResult.OK)
+                    {
+                        return;
+                    }
 
-                if (form.FileNameAndSpeedFactor != null)
-                {
-                    _fileNames[idx].Filename = form.FileNameAndSpeedFactor.Filename;
-                    _fileNames[idx].Factor = form.FileNameAndSpeedFactor.Factor;
-                    listViewAudioClips.Items[idx].SubItems[4].Text = $"{(form.FileNameAndSpeedFactor.Factor * 100.0m):0.#}%";
+                    listViewAudioClips.Items[idx].SubItems[5].Text = _subtitle.Paragraphs[idx].Text;
+
+                    if (form.FileNameAndSpeedFactor != null)
+                    {
+                        _fileNames[idx].Filename = form.FileNameAndSpeedFactor.Filename;
+                        _fileNames[idx].Factor = form.FileNameAndSpeedFactor.Factor;
+                        listViewAudioClips.Items[idx].SubItems[4].Text = $"{(form.FileNameAndSpeedFactor.Factor * 100.0m):0.#}%";
+                    }
                 }
-            }
+            });
         }
 
         private void exportListAsCsvToolStripMenuItem_Click(object sender, EventArgs e)

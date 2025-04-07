@@ -1,4 +1,5 @@
-﻿using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Settings;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using Nikse.SubtitleEdit.Core.Translate;
 using System;
@@ -23,12 +24,12 @@ namespace Nikse.SubtitleEdit.Core.AutoTranslate
         public int MaxCharacters => 1500;
 
         /// <summary>
-        /// See https://??
+        /// See https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models 
         /// </summary>
         public static string[] Models => new[]
         {
             "gemini-2.0-flash",
-            "gemini-pro",
+            "gemini-2.0-flash-lite",
         };
 
         public void Initialize()
@@ -47,6 +48,12 @@ namespace Nikse.SubtitleEdit.Core.AutoTranslate
             {
                 Configuration.Settings.Tools.GeminiModel = Models[0];
             }
+
+            if (string.IsNullOrEmpty(Configuration.Settings.Tools.GeminiPrompt))
+            {
+                Configuration.Settings.Tools.GeminiPrompt = new ToolsSettings().GeminiPrompt;
+            }
+
             var model = Configuration.Settings.Tools.GeminiModel;
             _httpClient.BaseAddress = new Uri($"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent");
         }
@@ -63,29 +70,37 @@ namespace Nikse.SubtitleEdit.Core.AutoTranslate
 
         public async Task<string> Translate(string text, string sourceLanguageCode, string targetLanguageCode, CancellationToken cancellationToken)
         {
-            var input = "{ \"contents\": [ { \"role\": \"user\", \"parts\": [{ \"text\": \"Please translate the following text from " + sourceLanguageCode + " to " + targetLanguageCode + ", only write the result: \\n\\n" + Json.EncodeJsonText(text.Trim()) + "\" }]}]}";
-            var content = new StringContent(input, Encoding.UTF8);
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+            int[] retryDelays = { 555, 3007, 7013 };
+            HttpResponseMessage result = null;
+            string resultContent = null;
+            for (var attempt = 0; attempt <= retryDelays.Length; attempt++)
+            {
+                var content = MakeContent(text, sourceLanguageCode, targetLanguageCode);
+                result = await _httpClient.PostAsync(string.Empty, content, cancellationToken);
+                resultContent = await result.Content.ReadAsStringAsync();
 
-            SeLogger.Error("GeminiTranslate calling with: " + input);
+                if (!DeepLTranslate.ShouldRetry(result, resultContent) || attempt == retryDelays.Length)
+                {
+                    break;
+                }
 
-            var result = await _httpClient.PostAsync(string.Empty, content, cancellationToken);
-            var bytes = await result.Content.ReadAsByteArrayAsync();
-            var json = Encoding.UTF8.GetString(bytes).Trim();
+                await Task.Delay(retryDelays[attempt], cancellationToken);
+            }
+
             if (!result.IsSuccessStatusCode)
             {
-                Error = json;
-                SeLogger.Error("GeminiTranslate failed calling API: Status code=" + result.StatusCode + Environment.NewLine + json);
+                Error = resultContent;
+                SeLogger.Error("GeminiTranslate failed calling API: Status code=" + result.StatusCode + Environment.NewLine + resultContent);
             }
             else
             {
-                SeLogger.Error("GeminiTranslate response: (Status code=" + result.StatusCode + ")" + Environment.NewLine + json);
+                SeLogger.Error("GeminiTranslate response: (Status code=" + result.StatusCode + ")" + Environment.NewLine + resultContent);
             }
 
             result.EnsureSuccessStatusCode();
 
             var parser = new SeJsonParser();
-            var resultText = parser.GetFirstObject(json, "text");
+            var resultText = parser.GetFirstObject(resultContent, "text");
             if (resultText == null)
             {
                 return string.Empty;
@@ -103,6 +118,15 @@ namespace Nikse.SubtitleEdit.Core.AutoTranslate
             }
 
             return outputText;
+        }
+
+        private HttpContent MakeContent(string text, string sourceLanguageCode, string targetLanguageCode)
+        {
+            var prompt = string.Format(Configuration.Settings.Tools.GeminiPrompt, sourceLanguageCode, targetLanguageCode);
+            var input = "{ \"contents\": [ { \"role\": \"user\", \"parts\": [{ \"text\": \"" + prompt + "\\n\\n" + Json.EncodeJsonText(text.Trim()) + "\" }]}]}";
+            var content = new StringContent(input, Encoding.UTF8);
+            content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+            return content;
         }
 
         private static List<TranslationPair> ListLanguages()
@@ -192,6 +216,7 @@ namespace Nikse.SubtitleEdit.Core.AutoTranslate
                MakePair("Slovene","sl"),
                MakePair("Slovenian","sl"),
                MakePair("Spanish","es"),
+               MakePair("Spanish (Latin America)","es-419"),
                MakePair("Swedish","sv"),
                MakePair("Tatar","tt"),
                MakePair("Thai","th"),

@@ -484,6 +484,14 @@ namespace Tests.Logic
         }
 
         [TestMethod]
+        public void FixInvalidItalicTags20()
+        {
+            var s1 = "<i>Foobar: </i>" + Environment.NewLine + "<i>Line 2.</i>";
+            var result = HtmlUtil.FixInvalidItalicTags(s1);
+            Assert.AreEqual("<i>Foobar:" + Environment.NewLine + "Line 2.</i>", result);
+        }
+
+        [TestMethod]
         public void FixInvalidItalicTagsWithAssTag()
         {
             var s1 = "{\\an8}<i>Hallo!<i/>" + Environment.NewLine + "<i>Hallo!<i/>";
@@ -513,6 +521,22 @@ namespace Tests.Logic
             var s1 = "[König:]<i> Ich weiß, dass du dagegen</i>" + Environment.NewLine + "<i>bist.</i>";
             var s2 = HtmlUtil.FixInvalidItalicTags(s1);
             Assert.AreEqual("[König:] <i>Ich weiß, dass du dagegen</i>" + Environment.NewLine + "<i>bist.</i>", s2);
+        }
+
+        [TestMethod]
+        public void FixInvalidItalicAllEndTags()
+        {
+            var s1 = "</i>Line1.</i>" + Environment.NewLine + "</i>Line2.</i>";
+            var s2 = HtmlUtil.FixInvalidItalicTags(s1);
+            Assert.AreEqual("<i>Line1.</i>" + Environment.NewLine + "<i>Line2.</i>", s2);
+        }
+
+        [TestMethod]
+        public void FixInvalidItalicAllStartTags()
+        {
+            var s1 = "<i>Line1.<i>" + Environment.NewLine + "<i>Line2.<i>";
+            var s2 = HtmlUtil.FixInvalidItalicTags(s1);
+            Assert.AreEqual("<i>Line1.</i>" + Environment.NewLine + "<i>Line2.</i>", s2);
         }
 
         [TestMethod]

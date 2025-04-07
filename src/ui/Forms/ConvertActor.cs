@@ -4,17 +4,14 @@ using Nikse.SubtitleEdit.Logic;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
-
-//TODO:
-//--------
-// - ASSA actor in two lines
 
 namespace Nikse.SubtitleEdit.Forms
 {
     public partial class ConvertActor : PositionAndSizeForm
     {
-        private Subtitle _subtitle;
+        public Subtitle Subtitle { get; set; }
         private SubtitleFormat _subtitleFormat;
         private bool _loading = true;
         private List<FixListItem> _fixItems;
@@ -23,6 +20,7 @@ namespace Nikse.SubtitleEdit.Forms
         {
             public Paragraph Paragraph { get; set; }
             public bool Checked { get; set; }
+            public bool IsNext { get; set; }
         }
 
         public int NumberOfActorConversions { get; private set; }
@@ -38,7 +36,7 @@ namespace Nikse.SubtitleEdit.Forms
 
         public void Initialize(Subtitle subtitle, SubtitleFormat subtitleFormat)
         {
-            _subtitle = subtitle;
+            Subtitle = new Subtitle(subtitle, false);
             _subtitleFormat = subtitleFormat;
 
             Text = LanguageSettings.Current.ConvertActor.Title;
@@ -66,14 +64,29 @@ namespace Nikse.SubtitleEdit.Forms
             nikseComboBoxConvertFrom.Items.Add(string.Format(LanguageSettings.Current.ConvertActor.InlineActorViaX, "()"));
             nikseComboBoxConvertFrom.Items.Add(string.Format(LanguageSettings.Current.ConvertActor.InlineActorViaX, ":"));
             nikseComboBoxConvertFrom.Items.Add(LanguageSettings.Current.General.Actor);
-            nikseComboBoxConvertFrom.SelectedIndex = 0;
+            if (_subtitleFormat.Name == AdvancedSubStationAlpha.NameOfFormat)
+            {
+                nikseComboBoxConvertFrom.SelectedIndex = 3;
+            }
+            else
+            {
+                nikseComboBoxConvertFrom.SelectedIndex = 0;
+            }
+
 
             nikseComboBoxConvertTo.Items.Clear();
             nikseComboBoxConvertTo.Items.Add(string.Format(LanguageSettings.Current.ConvertActor.InlineActorViaX, "[]"));
             nikseComboBoxConvertTo.Items.Add(string.Format(LanguageSettings.Current.ConvertActor.InlineActorViaX, "()"));
             nikseComboBoxConvertTo.Items.Add(string.Format(LanguageSettings.Current.ConvertActor.InlineActorViaX, ":"));
             nikseComboBoxConvertTo.Items.Add(LanguageSettings.Current.General.Actor);
-            nikseComboBoxConvertTo.SelectedIndex = 0;
+            if (nikseComboBoxConvertFrom.SelectedIndex == 0)
+            {
+                nikseComboBoxConvertTo.SelectedIndex = 1;
+            }
+            else
+            {
+                nikseComboBoxConvertTo.SelectedIndex = 0;
+            }
 
             nikseComboBoxCasing.Items.Clear();
             nikseComboBoxCasing.Items.Add(LanguageSettings.Current.ChangeCasing.NormalCasing);
@@ -83,12 +96,12 @@ namespace Nikse.SubtitleEdit.Forms
             nikseComboBoxCasing.SelectedIndex = 0;
         }
 
-        private ListViewItem MakeListViewItem(Paragraph p, int lineNumber, string newText, string oldText)
+        private ListViewItem MakeListViewItem(Paragraph p, bool selected, int lineNumber, string newText, string oldText, bool isNext)
         {
-            var fixItem = new FixListItem { Checked = true, Paragraph = p };
+            var fixItem = new FixListItem { Checked = true, Paragraph = p, IsNext = isNext };
             _fixItems.Add(fixItem);
 
-            var item = new ListViewItem(string.Empty) { Tag = p, Checked = true };
+            var item = new ListViewItem(string.Empty) { Tag = p, Checked = selected || !checkBoxOnlyNames.Checked };
             item.SubItems.Add(lineNumber.ToString());
             item.SubItems.Add(UiUtil.GetListViewTextFromString(oldText));
             item.SubItems.Add(UiUtil.GetListViewTextFromString(newText));
@@ -97,12 +110,12 @@ namespace Nikse.SubtitleEdit.Forms
 
         private void GeneratePreview()
         {
-            if (_subtitle == null || _loading)
+            if (Subtitle == null || _loading)
             {
                 return;
             }
 
-            ConvertActors(new Subtitle(_subtitle, false), out var numberOfConversions, true);
+            ConvertActors(new Subtitle(Subtitle, false), out var numberOfConversions, true);
             NumberOfActorConversions = numberOfConversions;
 
             groupBoxLinesFound.Text = string.Format(LanguageSettings.Current.ConvertActor.NumberOfConversionsX, NumberOfActorConversions);
@@ -126,8 +139,9 @@ namespace Nikse.SubtitleEdit.Forms
             Paragraph p = null;
             var lineNumbers = new List<int>();
             var listViewItems = new List<ListViewItem>();
+            var languageCode = LanguageAutoDetect.AutoDetectGoogleLanguage(subtitle);   
 
-            var converter = new ActorConverter(_subtitleFormat);
+            var converter = new ActorConverter(_subtitleFormat, languageCode);
 
             var from = nikseComboBoxConvertFrom.SelectedText;
             var to = nikseComboBoxConvertTo.SelectedText;
@@ -142,7 +156,6 @@ namespace Nikse.SubtitleEdit.Forms
             var changeCasing = checkBoxChangeCasing.Checked ? nikseComboBoxCasing.SelectedIndex : (int?)null;
             var color = checkBoxColor.Checked ? panelColor.BackColor : (Color?)null;
 
-
             for (var i = 0; i < subtitle.Paragraphs.Count; i++)
             {
                 p = subtitle.Paragraphs[i];
@@ -150,26 +163,51 @@ namespace Nikse.SubtitleEdit.Forms
 
                 if (fromSquare && Contains(p.Text, '[', ']'))
                 {
-                    p.Text = converter.FixActors(p, '[', ']', changeCasing, color);
-                    listViewItems.Add(MakeListViewItem(p, p.Number, p.Text, oldText));
+                    var result = converter.FixActors(p, '[', ']', changeCasing, color);
+                    if (result.Skip)
+                    {
+                        continue;
+                    }
+
+                    p.Text = result.Paragraph.Text;
+                    p.Actor = result.Paragraph.Actor;
+                    listViewItems.Add(MakeListViewItem(p, result.Selected, p.Number, p.Text, oldText, false));
                     numberOfConversions++;
+
+                    if (converter.ToActor && result.NextParagraph != null)
+                    {
+                        listViewItems.Add(MakeListViewItem(result.NextParagraph, result.Selected, p.Number, result.NextParagraph.Text, oldText, true));
+                    }
                 }
                 else if (fromParentheses && Contains(p.Text, '(', ')'))
                 {
-                    p.Text = converter.FixActors(p, '(', ')', changeCasing, color);
-                    listViewItems.Add(MakeListViewItem(p, p.Number, p.Text, oldText));
+                    var result = converter.FixActors(p, '(', ')', changeCasing, color);
+                    if (result.Skip)
+                    {
+                        continue;
+                    }
+
+                    p.Text = result.Paragraph.Text;
+                    p.Actor = result.Paragraph.Actor;
+                    listViewItems.Add(MakeListViewItem(p, result.Selected, p.Number, p.Text, oldText, false));
                     numberOfConversions++;
+
+                    if (converter.ToActor && result.NextParagraph != null)
+                    {
+                        listViewItems.Add(MakeListViewItem(result.NextParagraph, result.Selected, p.Number, result.NextParagraph.Text, oldText, true));
+                    }
                 }
                 else if (fromColon && p.Text.Contains(':'))
                 {
-                    p.Text = converter.FixActorsFromBeforeColon(p, ':', changeCasing, color);
-                    listViewItems.Add(MakeListViewItem(p, p.Number, p.Text, oldText));
+                    var result = converter.FixActorsFromBeforeColon(p, ':', changeCasing, color);
+                    p.Text = result;
+                    listViewItems.Add(MakeListViewItem(p, true, p.Number, p.Text, oldText, false));
                     numberOfConversions++;
                 }
                 else if (fromActor && !string.IsNullOrEmpty(p.Actor))
                 {
                     p.Text = converter.FixActorsFromActor(p, changeCasing, color);
-                    listViewItems.Add(MakeListViewItem(p, p.Number, p.Text, oldText));
+                    listViewItems.Add(MakeListViewItem(p, true, p.Number, p.Text, oldText, false));
                     numberOfConversions++;
                 }
                 else
@@ -221,18 +259,27 @@ namespace Nikse.SubtitleEdit.Forms
                     continue;
                 }
 
-                foreach (var p in _subtitle.Paragraphs)
+                if (fixItem.IsNext)
                 {
-                    if (p.Id == fixItem.Paragraph.Id)
+                    Subtitle.InsertParagraphInCorrectTimeOrder(fixItem.Paragraph);
+                }
+                else
+                {
+                    foreach (var p in Subtitle.Paragraphs)
                     {
-                        p.Text = fixItem.Paragraph.Text;
-                        p.Actor = fixItem.Paragraph.Actor;
-                        p.Style = fixItem.Paragraph.Style;
-                        p.Extra = fixItem.Paragraph.Extra;
-                        break;
+                        if (p.Id == fixItem.Paragraph.Id)
+                        {
+                            p.Text = fixItem.Paragraph.Text;
+                            p.Actor = fixItem.Paragraph.Actor;
+                            p.Style = fixItem.Paragraph.Style;
+                            p.Extra = fixItem.Paragraph.Extra;
+                            break;
+                        }
                     }
                 }
             }
+
+            Subtitle.Renumber();
 
             DialogResult = DialogResult.OK;
         }
@@ -348,6 +395,11 @@ namespace Nikse.SubtitleEdit.Forms
         }
 
         private void nikseComboBoxCasing_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            GeneratePreview();
+        }
+
+        private void checkBoxOnlyNames_CheckedChanged(object sender, EventArgs e)
         {
             GeneratePreview();
         }

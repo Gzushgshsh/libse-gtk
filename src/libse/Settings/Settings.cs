@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Enums;
+using System;
 using System.Collections.Generic;
 using Color = System.Drawing.Color;
 using ColorTranslator = System.Drawing.ColorTranslator;
@@ -6,8 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml;
-using Nikse.SubtitleEdit.Core.Common;
-using Nikse.SubtitleEdit.Core.Enums;
 
 namespace Nikse.SubtitleEdit.Core.Settings
 {
@@ -2400,6 +2400,12 @@ namespace Nikse.SubtitleEdit.Core.Settings
             if (subNode != null)
             {
                 settings.Tools.GeminiProApiKey = subNode.InnerText;
+            }
+
+            subNode = node.SelectSingleNode("GeminiPrompt");
+            if (subNode != null)
+            {
+                settings.Tools.GeminiPrompt = subNode.InnerText;
             }
 
             subNode = node.SelectSingleNode("TextToSpeechEngine");
@@ -5604,6 +5610,12 @@ namespace Nikse.SubtitleEdit.Core.Settings
                 settings.VideoControls.SpectrogramAppearance = subNode.InnerText;
             }
 
+            subNode = node.SelectSingleNode("SpectrogramWaveformOpacity");
+            if (subNode != null)
+            {
+                settings.VideoControls.SpectrogramWaveformOpacity = Convert.ToInt32(subNode.InnerText, CultureInfo.InvariantCulture);
+            }
+
             subNode = node.SelectSingleNode("WaveformMinimumSampleRate");
             if (subNode != null)
             {
@@ -5897,6 +5909,18 @@ namespace Nikse.SubtitleEdit.Core.Settings
             if (subNode != null)
             {
                 settings.VobSubOcr.CloudVisionSendOriginalImages = Convert.ToBoolean(subNode.InnerText, CultureInfo.InvariantCulture);
+            }
+
+            subNode = node.SelectSingleNode("OllamaLanguage");
+            if (subNode != null)
+            {
+                settings.VobSubOcr.OllamaLanguage = subNode.InnerText;
+            }
+
+            subNode = node.SelectSingleNode("OllamaModel");
+            if (subNode != null)
+            {
+                settings.VobSubOcr.OllamaModel = subNode.InnerText;
             }
 
             foreach (XmlNode groupNode in doc.DocumentElement.SelectNodes("MultipleSearchAndReplaceGroups/Group"))
@@ -9193,6 +9217,7 @@ namespace Nikse.SubtitleEdit.Core.Settings
                 xmlWriter.WriteElementString("AutoTranslateMaxBytes", settings.Tools.AutoTranslateMaxBytes.ToString(CultureInfo.InvariantCulture));
                 xmlWriter.WriteElementString("AutoTranslateStrategy", settings.Tools.AutoTranslateStrategy);
                 xmlWriter.WriteElementString("GeminiProApiKey", settings.Tools.GeminiProApiKey);
+                xmlWriter.WriteElementString("GeminiPrompt", settings.Tools.GeminiPrompt);
                 xmlWriter.WriteElementString("TextToSpeechEngine", settings.Tools.TextToSpeechEngine);
                 xmlWriter.WriteElementString("TextToSpeechLastVoice", settings.Tools.TextToSpeechLastVoice);
                 xmlWriter.WriteElementString("TextToSpeechElevenLabsApiKey", settings.Tools.TextToSpeechElevenLabsApiKey);
@@ -9779,6 +9804,7 @@ namespace Nikse.SubtitleEdit.Core.Settings
                 xmlWriter.WriteElementString("GenerateSpectrogram", settings.VideoControls.GenerateSpectrogram.ToString(CultureInfo.InvariantCulture));
                 xmlWriter.WriteElementString("WaveformLabelShowCodec", settings.VideoControls.WaveformLabelShowCodec.ToString(CultureInfo.InvariantCulture));
                 xmlWriter.WriteElementString("SpectrogramAppearance", settings.VideoControls.SpectrogramAppearance);
+                xmlWriter.WriteElementString("SpectrogramWaveformOpacity", settings.VideoControls.SpectrogramWaveformOpacity.ToString(CultureInfo.InvariantCulture));
                 xmlWriter.WriteElementString("WaveformMinimumSampleRate", settings.VideoControls.WaveformMinimumSampleRate.ToString(CultureInfo.InvariantCulture));
                 xmlWriter.WriteElementString("WaveformSeeksSilenceDurationSeconds", settings.VideoControls.WaveformSeeksSilenceDurationSeconds.ToString(CultureInfo.InvariantCulture));
                 xmlWriter.WriteElementString("WaveformSeeksSilenceMaxVolume", settings.VideoControls.WaveformSeeksSilenceMaxVolume.ToString(CultureInfo.InvariantCulture));
@@ -9833,6 +9859,8 @@ namespace Nikse.SubtitleEdit.Core.Settings
                 xmlWriter.WriteElementString("CloudVisionApiKey", settings.VobSubOcr.CloudVisionApiKey);
                 xmlWriter.WriteElementString("CloudVisionLanguage", settings.VobSubOcr.CloudVisionLanguage);
                 xmlWriter.WriteElementString("CloudVisionSendOriginalImages", settings.VobSubOcr.CloudVisionSendOriginalImages.ToString(CultureInfo.InvariantCulture));
+                xmlWriter.WriteElementString("OllamaLanguage", settings.VobSubOcr.OllamaLanguage);
+                xmlWriter.WriteElementString("OllamaModel", settings.VobSubOcr.OllamaModel);
 
                 xmlWriter.WriteEndElement();
 

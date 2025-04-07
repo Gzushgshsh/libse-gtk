@@ -723,6 +723,7 @@ namespace Nikse.SubtitleEdit.Core.Common
             text = text.Replace(" _@_", "_@_");
             text = text.Replace(" _@_ ", "_@_");
             text = text.Replace("_@_", " ");
+            text = text.Replace(" </i>" + Environment.NewLine, "</i>" + Environment.NewLine);
 
             if (text.Contains(beginTag))
             {
@@ -966,7 +967,10 @@ namespace Nikse.SubtitleEdit.Core.Common
                             var pre = text.Substring(0, idx + 1).TrimStart();
                             var tempText = text.Remove(0, idx + 1); 
                             
-                            if (!tempText.StartsWith(']') && !tempText.StartsWith(')'))
+                            if (!tempText.StartsWith(']') && 
+                                !tempText.StartsWith(')') &&
+                                !tempText.StartsWith(Environment.NewLine) &&
+                                !tempText.StartsWith("</i>" + Environment.NewLine))
                             {
                                 text = tempText;
                                 text = FixInvalidItalicTags(text).Trim();
@@ -1000,6 +1004,32 @@ namespace Nikse.SubtitleEdit.Core.Common
                 }
             }
 
+            if (noOfLines == 2 && italicBeginTagCount == 0 && italicEndTagCount == 4)
+            {
+                var lines = text.SplitToLines();
+                if (lines.Count == 2 &&
+                    lines[0].StartsWith("</i>", StringComparison.InvariantCulture) && lines[1].EndsWith("</i>", StringComparison.InvariantCulture) &&
+                    lines[1].StartsWith("</i>", StringComparison.InvariantCulture) && lines[1].EndsWith("</i>", StringComparison.InvariantCulture))
+                {
+                    var s1 = lines[0].Replace("</i>", string.Empty);
+                    var s2 = lines[1].Replace("</i>", string.Empty);
+                    text = "<i>" + s1.Trim() + "</i>" + Environment.NewLine + "<i>" + s2.Trim() + "</i>";
+                }
+            }
+
+            if (noOfLines == 2 && italicBeginTagCount == 4 && italicEndTagCount == 0)
+            {
+                var lines = text.SplitToLines();
+                if (lines.Count == 2 &&
+                    lines[0].StartsWith("<i>", StringComparison.InvariantCulture) && lines[1].EndsWith("<i>", StringComparison.InvariantCulture) &&
+                    lines[1].StartsWith("<i>", StringComparison.InvariantCulture) && lines[1].EndsWith("<i>", StringComparison.InvariantCulture))
+                {
+                    var s1 = lines[0].Replace("<i>", string.Empty);
+                    var s2 = lines[1].Replace("<i>", string.Empty);
+                    text = "<i>" + s1.Trim() + "</i>" + Environment.NewLine + "<i>" + s2.Trim() + "</i>";
+                }
+            }
+
             if (noOfLines == 3)
             {
                 var lines = text.SplitToLines();
@@ -1027,6 +1057,7 @@ namespace Nikse.SubtitleEdit.Core.Common
 
             text = text.Replace("<i></i>", string.Empty);
             text = text.Replace("</i><i>", string.Empty);
+            text = text.Replace($"<i>{Environment.NewLine}</i>", Environment.NewLine);
             if (text.IndexOf('@') < 0)
             {
                 text = text.Replace("</i> <i>", "@");

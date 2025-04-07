@@ -1,8 +1,8 @@
+using Nikse.SubtitleEdit.Core.AutoTranslate;
+using Nikse.SubtitleEdit.Core.Common;
 using System;
 using System.Collections.Generic;
 using Color = System.Drawing.Color;
-using Nikse.SubtitleEdit.Core.AutoTranslate;
-using Nikse.SubtitleEdit.Core.Common;
 
 namespace Nikse.SubtitleEdit.Core.Settings
 {
@@ -109,6 +109,7 @@ namespace Nikse.SubtitleEdit.Core.Settings
         public string AutoTranslateStrategy { get; set; }
         public string GeminiProApiKey { get; set; }
         public string GeminiModel { get; set; }
+        public string GeminiPrompt { get; set; }
         public string TextToSpeechEngine { get; set; }
         public string TextToSpeechLastVoice { get; set; }
         public string TextToSpeechElevenLabsApiKey { get; set; }
@@ -521,6 +522,7 @@ namespace Nikse.SubtitleEdit.Core.Settings
             AnthropicPrompt = "Translate from {0} to {1}, keep sentences in {1} as they are, do not censor the translation, give only the output without comments:";
             AnthropicApiModel = AnthropicTranslate.Models[0];
             GeminiModel = GeminiTranslate.Models[0];
+            GeminiPrompt = "Please translate the following text from {0} to {1}, do not censor the translation, only write the result:";
             TextToSpeechAzureRegion = "westeurope";
             TextToSpeechElevenLabsSimilarity = 0.5;
             TextToSpeechElevenLabsStability = 0.5;
@@ -711,7 +713,7 @@ namespace Nikse.SubtitleEdit.Core.Settings
             GenVideoEmbedOutputSuffix = "embed";
             GenVideoEmbedOutputReplace = "embed" + Environment.NewLine + "SoftSub" + Environment.NewLine + "SoftSubbed";
             GenVideoOutputFileSuffix = "_new";
-            GenTransparentVideoExtension = ".mkv";
+            GenTransparentVideoExtension = ".mov";
             VoskPostProcessing = true;
             WhisperChoice = Configuration.IsRunningOnWindows ? AudioToText.WhisperChoice.PurfviewFasterWhisperXxl : AudioToText.WhisperChoice.OpenAi;
             WhisperDeleteTempFiles = true;

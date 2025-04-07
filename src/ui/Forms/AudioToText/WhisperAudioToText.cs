@@ -843,7 +843,7 @@ namespace Nikse.SubtitleEdit.Forms.AudioToText
                 var dir = Path.GetDirectoryName(fileName);
                 if (!FileUtil.IsDirectoryWritable(dir))
                 {
-                    MessageBox.Show($"SE does not have write access to the folder '{dir}'", MessageBoxIcon.Error);
+                    MessageBox.Show(this, $"SE does not have write access to the folder '{dir}'", MessageBoxIcon.Error);
                 }
 
                 throw;
@@ -2008,7 +2008,7 @@ namespace Nikse.SubtitleEdit.Forms.AudioToText
                     }
                 }
 
-                comboBox.Items.AddRange(languagesToAdd.OrderBy(p => p.Name).ToArray<object>());
+                comboBox.Items.AddItems(languagesToAdd.OrderBy(p => p.Name));
 
                 var lang = languages.FirstOrDefault(p => p.Code == Configuration.Settings.Tools.WhisperLanguageCode);
                 comboBox.Text = lang != null ? lang.ToString() : "English";
@@ -2016,7 +2016,7 @@ namespace Nikse.SubtitleEdit.Forms.AudioToText
 
             if (!languagesFilled)
             {
-                comboBox.Items.AddRange(WhisperLanguage.Languages.OrderBy(p => p.Name).ToArray<object>());
+                comboBox.Items.AddItems(WhisperLanguage.Languages.OrderBy(p => p.Name));
                 var lang = WhisperLanguage.Languages.FirstOrDefault(p => p.Code == Configuration.Settings.Tools.WhisperLanguageCode);
                 comboBox.Text = lang != null ? lang.ToString() : "English";
             }

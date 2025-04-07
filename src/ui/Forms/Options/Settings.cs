@@ -23,6 +23,7 @@ namespace Nikse.SubtitleEdit.Forms.Options
 {
     public sealed partial class Settings : PositionAndSizeForm
     {
+        private Main _main;
         private const int GeneralSection = 0;
         private const int SubtitleFormatsSection = 1;
         private const int ShortcutsSection = 2;
@@ -40,11 +41,28 @@ namespace Nikse.SubtitleEdit.Forms.Options
         private string _oldVlcLocationRelative;
         private bool _oldListViewShowCps;
         private bool _oldListViewShowWpm;
+        private int _oldSpectrogramWaveformOpacity;
         private readonly Dictionary<ShortcutHelper, string> _newShortcuts = new Dictionary<ShortcutHelper, string>();
         private List<RulesProfile> _rulesProfiles;
         private List<PluginShortcut> _pluginShortcuts;
         private readonly bool _loading;
         private string _defaultLanguages;
+
+
+        private string[] spectrogramAppearances = { "OneColorGradient", "Classic", "Heat", "Cyan to orange" };
+
+        private int getSpectrogramAppearanceIndex(string name)
+        { 
+            for (var i = 0; i < spectrogramAppearances.Length; i++)
+            {
+                if (spectrogramAppearances[i] == name)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
 
         private static IEnumerable<string> GetSubtitleFormats() => SubtitleFormat.AllSubtitleFormats.Where(format => !format.IsVobSubIndexFile).Select(format => format.FriendlyName);
 
@@ -106,9 +124,10 @@ namespace Nikse.SubtitleEdit.Forms.Options
 
         private readonly string _oldSettings;
 
-        public Settings()
+        public Settings(Main main)
         {
             _loading = true;
+            _main = main;
             UiUtil.PreInitialize(this);
             InitializeComponent();
             UiUtil.FixFonts(this);
@@ -347,8 +366,8 @@ namespace Nikse.SubtitleEdit.Forms.Options
                     comboBoxVideoPlayerPreviewFontIndex = comboBoxSubtitleFontList.Count - 1;
                 }
             }
-            comboBoxSubtitleFont.Items.AddRange(comboBoxSubtitleFontList.ToArray<object>());
-            comboBoxVideoPlayerPreviewFontName.Items.AddRange(comboBoxSubtitleFontList.ToArray<object>());
+            comboBoxSubtitleFont.Items.AddItems(comboBoxSubtitleFontList);
+            comboBoxVideoPlayerPreviewFontName.Items.AddItems(comboBoxSubtitleFontList);
             comboBoxSubtitleFont.SelectedIndex = comboBoxSubtitleFontIndex;
             comboBoxVideoPlayerPreviewFontName.SelectedIndex = comboBoxVideoPlayerPreviewFontIndex;
             comboBoxSubtitleFont.EndUpdate();
@@ -771,6 +790,9 @@ namespace Nikse.SubtitleEdit.Forms.Options
             comboBoxSpectrogramAppearance.Items.Clear();
             comboBoxSpectrogramAppearance.Items.Add(language.SpectrogramOneColorGradient);
             comboBoxSpectrogramAppearance.Items.Add(language.SpectrogramClassic);
+            comboBoxSpectrogramAppearance.Items.Add(language.SpectrogramHeat);
+            comboBoxSpectrogramAppearance.Items.Add(language.SpectrogramCyanToOrange);
+            labelSpectrogramOpacity.Text = language.SpectrogramWaveformOpacity;
             labelWaveformTextSize.Text = language.WaveformTextFontSize;
             comboBoxWaveformTextSize.Left = labelWaveformTextSize.Left + labelWaveformTextSize.Width + 5;
             checkBoxWaveformTextBold.Text = language.SubtitleBold;
@@ -1075,7 +1097,7 @@ namespace Nikse.SubtitleEdit.Forms.Options
             {
                 comboBoxMergeShortLineLengthList.Add(i.ToString(CultureInfo.InvariantCulture));
             }
-            comboBoxMergeShortLineLength.Items.AddRange(comboBoxMergeShortLineLengthList.ToArray<object>());
+            comboBoxMergeShortLineLength.Items.AddItems(comboBoxMergeShortLineLengthList);
             comboBoxMergeShortLineLength.SelectedIndex = 0;
             var selMatch = gs.MergeLinesShorterThan.ToString();
             for (int i = 0; i < comboBoxMergeShortLineLength.Items.Count; i++)
@@ -1186,7 +1208,7 @@ namespace Nikse.SubtitleEdit.Forms.Options
             panelWaveformTextColor.BackColor = Configuration.Settings.VideoControls.WaveformTextColor;
             panelWaveformCursorColor.BackColor = Configuration.Settings.VideoControls.WaveformCursorColor;
             checkBoxGenerateSpectrogram.Checked = Configuration.Settings.VideoControls.GenerateSpectrogram;
-            comboBoxSpectrogramAppearance.SelectedIndex = Configuration.Settings.VideoControls.SpectrogramAppearance == "OneColorGradient" ? 0 : 1;
+            comboBoxSpectrogramAppearance.SelectedIndex = getSpectrogramAppearanceIndex(Configuration.Settings.VideoControls.SpectrogramAppearance);
             comboBoxWaveformTextSize.Text = Configuration.Settings.VideoControls.WaveformTextSize.ToString(CultureInfo.InvariantCulture);
             checkBoxWaveformTextBold.Checked = Configuration.Settings.VideoControls.WaveformTextBold;
             checkBoxReverseMouseWheelScrollDirection.Checked = Configuration.Settings.VideoControls.WaveformMouseWheelScrollUpIsForward;
@@ -1287,7 +1309,7 @@ namespace Nikse.SubtitleEdit.Forms.Options
                 var favoriteFormats = Configuration.Settings.General.FavoriteSubtitleFormats.Split(';');
                 if (favoriteFormats.Length > 0)
                 {
-                    listBoxFavoriteSubtitleFormats.Items.AddRange(favoriteFormats.ToArray<object>());
+                    listBoxFavoriteSubtitleFormats.Items.AddRange(favoriteFormats);
                 }
             }
 
@@ -1346,6 +1368,8 @@ namespace Nikse.SubtitleEdit.Forms.Options
 
             _oldListViewShowCps = Configuration.Settings.Tools.ListViewShowColumnCharsPerSec;
             _oldListViewShowWpm = Configuration.Settings.Tools.ListViewShowColumnWordsPerMin;
+
+            _oldSpectrogramWaveformOpacity = Configuration.Settings.VideoControls.SpectrogramWaveformOpacity;
 
             labelPlatform.Text = (IntPtr.Size * 8) + "-bit";
 
@@ -2032,6 +2056,22 @@ namespace Nikse.SubtitleEdit.Forms.Options
             return $" [{shortcut}]";
         }
 
+        private void TrackBarSpectrogramOpacityValueChanged(object sender, EventArgs e)
+        {
+            TrackBar trackBar = (TrackBar)sender;
+            var middleValue = 256; // get the middle value.
+            var threshold = 50; // Adjust this threshold as needed
+
+            // Check if the change is significant enough
+            if (Math.Abs(trackBar.Value - middleValue) < threshold)
+            {
+                // Snap back to the middle value
+                trackBar.Value = middleValue;
+            }
+
+            _main.setSpectrogramWaveformOpacity(trackBar.Value);
+        }
+
         private void InitializeWaveformsAndSpectrogramsFolderEmpty(LanguageStructure.Settings language)
         {
             string waveformsFolder = Configuration.WaveformsDirectory.TrimEnd(Path.DirectorySeparatorChar);
@@ -2438,8 +2478,8 @@ namespace Nikse.SubtitleEdit.Forms.Options
             Configuration.Settings.VideoControls.WaveformTextColor = panelWaveformTextColor.BackColor;
             Configuration.Settings.VideoControls.WaveformCursorColor = panelWaveformCursorColor.BackColor;
             Configuration.Settings.VideoControls.GenerateSpectrogram = checkBoxGenerateSpectrogram.Checked;
-            Configuration.Settings.VideoControls.SpectrogramAppearance = comboBoxSpectrogramAppearance.SelectedIndex == 0 ? "OneColorGradient" : "Classic";
-
+            Configuration.Settings.VideoControls.SpectrogramAppearance = spectrogramAppearances[comboBoxSpectrogramAppearance.SelectedIndex];
+            Configuration.Settings.VideoControls.SpectrogramWaveformOpacity = trackBarSpectrogramOpacity.Value;
             Configuration.Settings.VideoControls.WaveformTextSize = int.Parse(comboBoxWaveformTextSize.Text);
             Configuration.Settings.VideoControls.WaveformTextBold = checkBoxWaveformTextBold.Checked;
             Configuration.Settings.VideoControls.WaveformMouseWheelScrollUpIsForward = checkBoxReverseMouseWheelScrollDirection.Checked;
@@ -3057,6 +3097,8 @@ namespace Nikse.SubtitleEdit.Forms.Options
             Configuration.Settings.General.VlcLocationRelative = _oldVlcLocationRelative;
             Configuration.Settings.Tools.ListViewShowColumnCharsPerSec = _oldListViewShowCps;
             Configuration.Settings.Tools.ListViewShowColumnWordsPerMin = _oldListViewShowWpm;
+            Configuration.Settings.VideoControls.SpectrogramWaveformOpacity = _oldSpectrogramWaveformOpacity;
+            _main.setSpectrogramWaveformOpacity(_oldSpectrogramWaveformOpacity);
 
             DialogResult = DialogResult.Cancel;
         }

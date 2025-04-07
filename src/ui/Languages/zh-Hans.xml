@@ -604,6 +604,13 @@ Command line: {1} {2}
     <OnlyLookForDifferencesInText>仅查找差异文本</OnlyLookForDifferencesInText>
     <CannotCompareWithImageBasedSubtitles>无法比较基于图像的字幕</CannotCompareWithImageBasedSubtitles>
   </CompareSubtitles>
+  <ConvertActor>
+    <Title>转换演员</Title>
+    <ConvertActorFrom>更改演员从</ConvertActorFrom>
+    <ConvertActorTo>更改演员为</ConvertActorTo>
+    <InlineActorViaX>内联演员通过{0}</InlineActorViaX>
+    <NumberOfConversionsX>演员转换的数量：{0}</NumberOfConversionsX>
+  </ConvertActor>
   <ConvertColorsToDialog>
     <Title>将颜色转换为对话框</Title>
     <RemoveColorTags>去除颜色标签</RemoveColorTags>
@@ -1399,6 +1406,7 @@ Command line: {1} {2}
         <StartNumberingFrom>编号起始位置...</StartNumberingFrom>
         <RemoveTextForHearingImpaired>删除听障辅助文本...</RemoveTextForHearingImpaired>
         <ConvertColorsToDialog>将颜色转换为对话框...</ConvertColorsToDialog>
+        <ConvertActors>转换演员...</ConvertActors>
         <ChangeCasing>更改大小写...</ChangeCasing>
         <ChangeFrameRate>更改帧率...</ChangeFrameRate>
         <ChangeSpeedInPercent>更改速度 (百分比)...</ChangeSpeedInPercent>
@@ -2467,6 +2475,9 @@ Command line: {1} {2}
     <SpectrogramAppearance>频谱图外观</SpectrogramAppearance>
     <SpectrogramOneColorGradient>单色梯度</SpectrogramOneColorGradient>
     <SpectrogramClassic>经典</SpectrogramClassic>
+    <SpectrogramHeat>热力图</SpectrogramHeat>
+    <SpectrogramCyanToOrange>青色到橙色</SpectrogramCyanToOrange>
+    <SpectrogramWaveformOpacity>频谱/波形图透明度:</SpectrogramWaveformOpacity>
     <WaveformUseFFmpeg>使用 FFmpeg 提取波形</WaveformUseFFmpeg>
     <WaveformUseCenterChannelOnly>仅使用前置/中置声道（适用于 5.1/7.1声道）</WaveformUseCenterChannelOnly>
     <DownloadX>下载 {0}</DownloadX>

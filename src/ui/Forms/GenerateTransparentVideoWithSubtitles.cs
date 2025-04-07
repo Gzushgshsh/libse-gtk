@@ -111,10 +111,10 @@ namespace Nikse.SubtitleEdit.Forms
             comboBoxOpaqueBoxStyle.Enabled = false;
 
             nikseComboBoxVideoExtension.Items.Clear();
+            nikseComboBoxVideoExtension.Items.Add(".mov");
             nikseComboBoxVideoExtension.Items.Add(".mkv");
             nikseComboBoxVideoExtension.Items.Add(".mp4");
             nikseComboBoxVideoExtension.Items.Add(".webm");
-            nikseComboBoxVideoExtension.Items.Add(".mov");
             nikseComboBoxVideoExtension.Text = Configuration.Settings.Tools.GenTransparentVideoExtension;
 
             progressBar1.Visible = false;
@@ -433,11 +433,24 @@ namespace Nikse.SubtitleEdit.Forms
                 using (var saveDialog = new SaveFileDialog
                 {
                     FileName = SuggestNewVideoFileName(),
-                    Filter = "MP4|*.mp4|Matroska|*.mkv|WebM|*.webm|mov|*.mov",
+                    Filter = "mov|*.mov|MP4|*.mp4|Matroska|*.mkv|WebM|*.webm",
                     AddExtension = true,
                     InitialDirectory = string.IsNullOrEmpty(_assaSubtitle.FileName) ? string.Empty : Path.GetDirectoryName(_assaSubtitle.FileName),
                 })
                 {
+                    if (nikseComboBoxVideoExtension.Text == ".mp4")
+                    {
+                        saveDialog.Filter = "MP4|*.mp4|Matroska|*.mkv|WebM|*.webm|mov|*.mov";
+                    }
+                    else if (nikseComboBoxVideoExtension.Text == ".mkv")
+                    {
+                        saveDialog.Filter = "Matroska|*.mkv|MP4|*.mp4|WebM|*.webm|mov|*.mov";
+                    }
+                    else if (nikseComboBoxVideoExtension.Text == ".webm")
+                    {
+                        saveDialog.Filter = "WebM|*.webm|mov|*.mov|Matroska|*.mkv|MP4|*.mp4";
+                    }
+
                     if (saveDialog.ShowDialog(this) != DialogResult.OK)
                     {
                         buttonGenerate.Enabled = true;
@@ -658,7 +671,7 @@ namespace Nikse.SubtitleEdit.Forms
                 fileName += $".{numericUpDownWidth.Value}x{numericUpDownHeight.Value}";
             }
 
-            return fileName.Replace(".", "_") + ".mp4";
+            return fileName.Replace(".", "_") + nikseComboBoxVideoExtension.Text;
         }
 
         private bool ConvertVideo(bool oldFontSizeEnabled, Subtitle subtitle)
@@ -1250,7 +1263,7 @@ namespace Nikse.SubtitleEdit.Forms
                 {
                     FileUtil.WriteAllText(assaTempFileName, format.ToText(subtitle, null), new TextEncoding(Encoding.UTF8, "UTF8"));
                 }
-                catch 
+                catch
                 {
                     // might be a write protected folder, so we try the temp folder
                     assaTempFileName = Path.Combine(Path.GetTempPath(), Path.GetFileName(assaTempFileName));
