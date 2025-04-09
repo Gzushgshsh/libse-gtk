@@ -4,7 +4,7 @@ using Point = Gdk.Point;
 
 namespace Lucas.SubtitleEdit.CairoExpansions
 {
-    public static class CairoHelper
+    public static class ContextExtensions
     {
         /// <summary>
         /// Draw the <paramref name="image"/> in <paramref name="tlCorner"/> whith shear effect
@@ -14,7 +14,7 @@ namespace Lucas.SubtitleEdit.CairoExpansions
         /// <param name="tlCorner">Top-Right corner location</param>
         /// <param name="urCorner">Top-Left corner location</param>
         /// <param name="dlCorner">Down-Left corner location</param>
-        private static void DrawImageShear(Context cr, Pixbuf image, Point tlCorner, Point urCorner, Point dlCorner)
+        private static void DrawImageShear(this Context cr, Pixbuf image, Point tlCorner, Point urCorner, Point dlCorner)
         {                
             double xx, yx, xy, yy; 
             
