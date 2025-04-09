@@ -14,7 +14,7 @@ namespace Lucas.SubtitleEdit.CairoExpansions
         /// <param name="tlCorner">Top-Right corner location</param>
         /// <param name="urCorner">Top-Left corner location</param>
         /// <param name="dlCorner">Down-Left corner location</param>
-        private static void DrawImageShear(this Context cr, Pixbuf image, Point tlCorner, Point urCorner, Point dlCorner)
+        public static void DrawImageShear(this Context cr, Pixbuf image, Point tlCorner, Point urCorner, Point dlCorner)
         {                
             double xx, yx, xy, yy; 
             
